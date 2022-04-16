@@ -6,22 +6,36 @@ pool:
 
 variables:
   webAppName: BlinkeyWebbApp
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
 
-stages:
-  - stage: Build
-    displayName: Build
-    jobs:
-      - template: ./cicd/build.yml
-        parameters:
-          name: build
-          displayName: build web app
+  jobs:
+    - job: Build
+      displayName: Build
+      pool:
+        vmImage: 'windows-latest'
 
-  - stage: Depoy
-    displayName: Depoy
-    dependsOn: Build
-    jobs:
-      - template: ./cicd/deploy.yml
-        parameters:
-          name: deploy
-          displayName: Depoy web app
-          webAppName: '$(webAppName)'
+      steps:
+      - task: NuGetToolInstaller@1
+    
+      - task: NuGetCommand@2
+        inputs:
+          restoreSolution: '$(solution)'
+    
+      - task: VSBuild@1
+        inputs:
+          solution: '$(solution)'
+          msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+          platform: '$(buildPlatform)'
+          configuration: '$(buildConfiguration)'
+    
+      - task: VSTest@2
+        inputs:
+          platform: '$(buildPlatform)'
+          configuration: '$(buildConfiguration)'
+
+    - job: ${{ parameters.name }}
+      displayName: ${{ parameters.displayName }}
+      pool:
+        vmImage: 'windows-latest'

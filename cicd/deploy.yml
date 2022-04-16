@@ -1,9 +1,0 @@
-parameters:
-- name: name
-- name: displayName
-
-jobs:
-- job: ${{ parameters.name }}
-  displayName: ${{ parameters.displayName }}
-  pool:
-    vmImage: 'windows-latest'
