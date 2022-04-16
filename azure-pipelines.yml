@@ -4,11 +4,24 @@ trigger:
 pool:
   vmImage: 'windows-latest'
 
+variables:
+  webAppName: BlinkeyWebbApp
+
 stages:
-  - stage: build
-    displayName: build
+  - stage: Build
+    displayName: Build
     jobs:
       - template: ./cicd/build.yml
         parameters:
           name: build
           displayName: build web app
+
+  - stage: Depoy
+    displayName: Depoy
+    dependsOn: Build
+    jobs:
+      - template: ./cicd/deploy.yml
+        parameters:
+          name: deploy
+          displayName: Depoy web app
+          webAppName: '$(webAppName)'
