@@ -9,6 +9,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  dockerImageName: myWebAppTest
 
   jobs:
     - job: Build
@@ -35,7 +36,18 @@ variables:
           platform: '$(buildPlatform)'
           configuration: '$(buildConfiguration)'
 
-    - job: ${{ parameters.name }}
-      displayName: ${{ parameters.displayName }}
+    - job: Build and push container
+      displayName: Build and push container
+      dependsOn: Build
+      condition: succeeded('Build')
       pool:
-        vmImage: 'windows-latest'
+        vmImage: 'ubuntu-latest'
+      
+      steps: 
+        - task: Docker@2
+          inputs:
+            containerRegistry: 'testAcr'
+            repository: $(dockerImageName)
+            command: 'buildAndPush'
+            Dockerfile: '$(System.DefaultWorkingDirectory)/src/WebApp**/Dockerfile'
+            tags: latest
