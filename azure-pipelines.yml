@@ -55,5 +55,5 @@ jobs:
       repository: $(dockerImageName)
       command: 'buildAndPush'
       Dockerfile: '$(System.DefaultWorkingDirectory)/src/WebApp/Dockerfile'
-      buildContext: '$(System.DefaultWorkingDirectory)/'
+      buildContext: '$(System.DefaultWorkingDirectory)'
       tags: latest
