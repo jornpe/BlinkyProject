@@ -49,5 +49,5 @@ jobs:
         containerRegistry: 'testAcr'
         repository: $(dockerImageName)
         command: 'buildAndPush'
-        Dockerfile: '$(System.DefaultWorkingDirectory)/src/WebApp**/Dockerfile'
+        Dockerfile: '**/Dockerfile'
         tags: latest
