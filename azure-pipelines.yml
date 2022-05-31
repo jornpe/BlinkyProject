@@ -57,7 +57,7 @@ stages:
 
       - task: Docker@2
         inputs:
-          containerRegistry: 'testAcr'
+          containerRegistry: 'acrjornpe'
           repository: $(dockerImageName)
           command: 'buildAndPush'
           Dockerfile: '$(System.DefaultWorkingDirectory)/src/WebApp/Dockerfile'
