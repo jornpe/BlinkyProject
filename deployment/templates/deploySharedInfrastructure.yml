@@ -32,6 +32,7 @@ stages:
   jobs:
   - deployment: DeployInfrastructure
     displayName: Deploy Infrastructure
+    environment: Blinkey Shared
     strategy:
       runOnce:
         deploy:
