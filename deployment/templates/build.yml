@@ -6,12 +6,11 @@ variables:
   - name: buildConfiguration
     value: 'Release'
 
-jobs:
 - job: Build
   displayName: Build web app
   pool:
     vmImage: 'windows-latest'
-    
+
   steps:
   - task: NuGetToolInstaller@1
 
