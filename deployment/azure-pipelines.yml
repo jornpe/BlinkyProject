@@ -1,0 +1,36 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  webAppName: BlinkeyWebbApp
+  dockerImageNameAndTag: 'myWebAppTest:$(Build.BuildNumber)'
+  containerRegistryName: crblinkeyshared001
+
+stages:
+
+- stage: Build
+  displayName: Build and test
+  jobs:
+    - template: templates/build.yml
+
+# Deploy shared infrastructure
+- template: templates/deploySharedInfrastructure.yml
+  parameters:
+    registryName: containerRegistryName
+
+# # Deploy dev environment
+# - template: templates/deployEnvironment.yml
+#   parameters:
+#     environmentType: dev
+#     registryName: containerRegistryName
+#     containerImageAndTag: dockerImageNameAndTag
+
+# # Deploy prod environment
+# - template: templates/deployEnvironment.yml
+#   parameters:
+#     environmentType: prod
+#     registryName: containerRegistryName 
+#     containerImageAndTag: dockerImageNameAndTag

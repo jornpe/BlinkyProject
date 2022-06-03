@@ -1,0 +1,65 @@
+parameters:
+- name: environmentType
+  type: string
+- name: registryName
+  type: string
+
+variables:
+- name: ServiceConnection
+  value: Blinkey-${{parameters.environmentType}}
+- name: ResourceGroupName
+  value: rg-blinkey-${{parameters.environmentType}}-norwayeast-001
+
+
+stages:
+
+- ${{ if ne(parameters.environmentType, 'prod') }}:
+  - stage: Validate_${{parameters.environmentType}}
+    displayName: Validate (${{parameters.environmentType}} environment)
+    jobs:
+    - job: ValidateBicepCode
+      displayName: Validate Bicep code
+      steps:
+        - task: AzureCLI@2
+          name: RunPreflightValidation
+          displayName: Run preflight validation
+          inputs:
+            azureSubscription: $(ServiceConnection)
+            scriptType: 'bash'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              az deployment group validate \
+                --resource-group $(ResourceGroupName) \
+                --template-file deployment/blinkey.bicep \
+                --parameters environmentType=${{environmentType}} \
+                             registryName=${{parameters.registryName}}
+    
+- stage: Deploy_${{parameters.environmentType}}
+  displayName: Deploy (${{parameters.environmentType}} Infrastructure)
+  jobs:
+  - deployment: DeployInfrastructure
+    displayName: Deploy Infrastructure
+    ${{ if eq(variables['Build.SourceBranchName'], 'dev') }}:
+      environment: 'Blinkey development'
+    ${{ else }}:
+      environment: 'Blinkey production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+            - task: AzureCLI@2
+              name: DeployBicepFile
+              displayName: Deploy Bicep file
+              inputs:
+                azureSubscription: $(ServiceConnection)
+                scriptType: 'bash'
+                scriptLocation: 'inlineScript'
+                inlineScript: |
+                  set -e
+                  deploymentOutput=$(az deployment group create \
+                    --name $(Build.BuildNumber) \
+                    --resource-group $(ResourceGroupName) \
+                    --template-file deployment/blinkey.bicep \
+                    --parameters environmentType=${{environmentType}} \
+                                 registryName=${{parameters.registryName}}
