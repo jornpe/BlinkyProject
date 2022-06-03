@@ -46,8 +46,7 @@ stages:
                 scriptType: 'bash'
                 scriptLocation: 'inlineScript'
                 inlineScript: |
-                  set -e
-                  deploymentOutput=$(az deployment group create \
+                  az deployment group create \
                     --name $(Build.BuildNumber) \
                     --resource-group ${{parameters.ResourceGroupName}} \
                     --template-file deployment/sharedinfratructure.bicep \
