@@ -18,12 +18,12 @@ stages:
         name: RunPreflightValidation
         displayName: Run preflight validation
         inputs:
-          azureSubscription: ${{parameters.ServiceConnection}
+          azureSubscription: ${{parameters.ServiceConnection}}
           scriptType: 'bash'
           scriptLocation: 'inlineScript'
           inlineScript: |
             az deployment group validate \
-              --resource-group ${{parameters.ResourceGroupName} \
+              --resource-group ${{parameters.ResourceGroupName}} \
               --template-file deployment/sharedinfratructure.bicep \
               --parameters registryName=${{parameters.registryName}}
 
@@ -42,13 +42,13 @@ stages:
               name: DeployBicepFile
               displayName: Deploy Bicep file
               inputs:
-                azureSubscription: ${{parameters.ServiceConnection}
+                azureSubscription: ${{parameters.ServiceConnection}}
                 scriptType: 'bash'
                 scriptLocation: 'inlineScript'
                 inlineScript: |
                   set -e
                   deploymentOutput=$(az deployment group create \
                     --name $(Build.BuildNumber) \
-                    --resource-group ${{parameters.ResourceGroupName} \
+                    --resource-group ${{parameters.ResourceGroupName}} \
                     --template-file deployment/sharedinfratructure.bicep \
                     --parameters registryName=${{parameters.registryName}}
