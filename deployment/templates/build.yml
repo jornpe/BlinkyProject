@@ -1,10 +1,6 @@
 jobs:
 - job: Build
   displayName: Build web app
-  variables:
-    solution: '**/*.sln'
-    buildPlatform: 'Any CPU'
-    buildConfiguration: 'Release'
   pool:
     vmImage: 'windows-latest'
 
@@ -13,16 +9,16 @@ jobs:
 
   - task: NuGetCommand@2
     inputs:
-      restoreSolution: '$(solution)'
+      restoreSolution: '**/*.sln'
 
   - task: VSBuild@1
     inputs:
-      solution: '$(solution)'
+      solution: '**/*.sln'
       msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
+      platform: 'Any CPU'
+      configuration: 'Release'
 
   - task: VSTest@2
     inputs:
       platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
+      configuration: 'Release'
