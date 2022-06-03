@@ -24,6 +24,7 @@ stages:
     registryName: $(containerRegistryName)
     serviceConnection: $(serviceConnectionShared)
     ResourceGroupName: $(sharedResourceGroupName)
+    
 
 # # Deploy dev environment
 # - template: templates/deployEnvironment.yml
