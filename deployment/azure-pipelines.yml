@@ -8,6 +8,8 @@ variables:
   webAppName: BlinkeyWebbApp
   dockerImageNameAndTag: 'myWebAppTest:$(Build.BuildNumber)'
   containerRegistryName: crblinkeyshared001
+  serviceConnectionShared: Blinkey-shared
+  sharedResourceGroupName: rg-blinkey-shared-norwayeast-001
 
 stages:
 
@@ -20,6 +22,8 @@ stages:
 - template: templates/deploySharedInfrastructure.yml
   parameters:
     registryName: containerRegistryName
+    serviceConnection: serviceConnectionShared
+    ResourceGroupName: sharedResourceGroupName
 
 # # Deploy dev environment
 # - template: templates/deployEnvironment.yml

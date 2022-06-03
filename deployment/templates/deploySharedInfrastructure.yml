@@ -1,13 +1,10 @@
 parameters:
 - name: registryName
   type: string
-
-variables:
-  - name: ServiceConnection
-    value: Blinkey-shared
-  - name: ResourceGroupName
-    value: rg-blinkey-shared-norwayeast-001
-
+- name: serviceConnection
+  type: string
+- name: resourceGroupName
+  type: string
 
 stages:
 
