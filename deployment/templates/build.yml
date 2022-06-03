@@ -1,13 +1,9 @@
-variables:
-  - name: solution
-    value: '**/*.sln'
-  - name: buildPlatform
-    value: 'Any CPU'
-  - name: buildConfiguration
-    value: 'Release'
-
 - job: Build
   displayName: Build web app
+  variables:
+    solution: '**/*.sln'
+    buildPlatform: 'Any CPU'
+    buildConfiguration: 'Release'
   pool:
     vmImage: 'windows-latest'
 
