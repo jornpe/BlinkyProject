@@ -3,6 +3,8 @@ parameters:
   type: string
 - name: registryName
   type: string
+- name: containerImageAndTag
+  type: string
 
 stages:
 
@@ -25,8 +27,9 @@ stages:
                 --resource-group rg-blinkey-${{parameters.environmentType}}-norwayeast-001 \
                 --template-file deployment/blinkey.bicep \
                 --parameters environmentType=${{environmentType}} \
-                             registryName=${{parameters.registryName}}
-    
+                             containerRegistryName=${{parameters.registryName}} \
+                             containerImageAndTag=${{parameters.registryName}}
+
 - stage: Deploy_${{parameters.environmentType}}
   displayName: Deploy (${{parameters.environmentType}} Infrastructure)
   jobs:
@@ -55,4 +58,5 @@ stages:
                     --resource-group rg-blinkey-${{parameters.environmentType}}-norwayeast-001 \
                     --template-file deployment/blinkey.bicep \
                     --parameters environmentType=${{environmentType}} \
-                                 registryName=${{parameters.registryName}}
+                                 containerRegistryName=${{parameters.registryName}} \
+                                 containerImageAndTag=${{parameters.registryName}}

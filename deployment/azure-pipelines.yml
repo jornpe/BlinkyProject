@@ -6,10 +6,10 @@ pool:
 
 variables:
   webAppName: BlinkeyWebbApp
-  dockerImageNameAndTag: 'myWebAppTest:$(Build.BuildNumber)'
-  containerRegistryName: crblinkeyshared001
-  serviceConnectionShared: Blinkey-shared
-  sharedResourceGroupName: rg-blinkey-shared-norwayeast-001
+  dockerImageNameAndTag: 'blinkey:$(Build.BuildNumber)'
+  containerRegistryName: 'crblinkeyshared001'
+  serviceConnectionShared: 'Blinkey-shared'
+  sharedResourceGroupName: 'rg-blinkey-shared-norwayeast-001'
 
 stages:
 
