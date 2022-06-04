@@ -8,9 +8,9 @@ parameters:
 
 stages:
 
-- ${{ if ne(parameters.environmentType, 'prod') }}:
-  - stage: Validate_${{parameters.environmentType}}
-    displayName: Validate (${{parameters.environmentType}} environment)
+- ${{ if eq(parameters.environmentType, 'dev') }}:
+  - stage: Validate_${{ parameters.environmentType }}
+    displayName: Validate (${{ parameters.environmentType }} environment)
     jobs:
     - job: ValidateBicepCode
       displayName: Validate Bicep code
@@ -19,23 +19,23 @@ stages:
           name: RunPreflightValidation
           displayName: Run preflight validation
           inputs:
-            azureSubscription: Blinkey-${{parameters.environmentType}}
+            azureSubscription: Blinkey-${{ parameters.environmentType }}
             scriptType: 'bash'
             scriptLocation: 'inlineScript'
             inlineScript: |
               az deployment group validate \
-                --resource-group rg-blinkey-${{parameters.environmentType}}-norwayeast-001 \
+                --resource-group rg-blinkey-${{ parameters.environmentType }}-norwayeast-001 \
                 --template-file deployment/blinkey.bicep \
-                --parameters environmentType=${{environmentType}} \
-                             containerRegistryName=${{parameters.registryName}} \
-                             containerImageAndTag=${{parameters.registryName}}
+                --parameters environmentType=${{ environmentType }} \
+                             containerRegistryName=${{ parameters.registryName }} \
+                             containerImageAndTag=${{ parameters.containerImageAndTag }}
 
-- stage: Deploy_${{parameters.environmentType}}
-  displayName: Deploy (${{parameters.environmentType}} Infrastructure)
+- stage: Deploy_${{ parameters.environmentType }}
+  displayName: Deploy (${{ parameters.environmentType }} Infrastructure)
   jobs:
   - deployment: DeployInfrastructure
     displayName: Deploy Infrastructure
-    ${{ if eq(variables['Build.SourceBranchName'], 'dev') }}:
+    ${{ if eq(parameters.environmentType, 'dev') }}:
       environment: 'Blinkey development'
     ${{ else }}:
       environment: 'Blinkey production'
@@ -48,15 +48,15 @@ stages:
               name: DeployBicepFile
               displayName: Deploy Bicep file
               inputs:
-                azureSubscription: Blinkey-${{parameters.environmentType}}
+                azureSubscription: Blinkey-${{ parameters.environmentType }}
                 scriptType: 'bash'
                 scriptLocation: 'inlineScript'
                 inlineScript: |
                   set -e
                   deploymentOutput=$(az deployment group create \
                     --name $(Build.BuildNumber) \
-                    --resource-group rg-blinkey-${{parameters.environmentType}}-norwayeast-001 \
+                    --resource-group rg-blinkey-${{ parameters.environmentType }}-norwayeast-001 \
                     --template-file deployment/blinkey.bicep \
-                    --parameters environmentType=${{environmentType}} \
-                                 containerRegistryName=${{parameters.registryName}} \
-                                 containerImageAndTag=${{parameters.registryName}}
+                    --parameters environmentType=${{ environmentType }} \
+                                 containerRegistryName=${{ parameters.registryName }} \
+                                 containerImageAndTag=${{ parameters.containerImageAndTag }}
