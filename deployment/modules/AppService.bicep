@@ -3,11 +3,6 @@ param location string
 param appServiceName string
 param containerSpecs string
 
-var appServiceAppConfig = [
-  {
-  }
-]
-
 resource appservicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   name: appServicePlanName
   location: location
@@ -27,7 +22,6 @@ resource appService 'Microsoft.Web/sites@2021-03-01' = {
   properties: {
     serverFarmId: appservicePlan.id
     siteConfig: {
-      appSettings: appServiceAppConfig
       acrUseManagedIdentityCreds: true
       linuxFxVersion: containerSpecs
     }
