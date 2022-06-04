@@ -41,6 +41,9 @@ module appService 'modules/AppService.bicep' = {
 module roleAssignment 'modules/roleDefinitionAssignment.bicep' = {
   name: 'appServiceAcrPullRoleAssignment'
   scope: resourceGroup(containerRegistryResourceGroup)
+  dependsOn: [
+    appService
+  ]
   params: {
     principalId: appService.outputs.appService.identity.id
     roleDefinitionId: acrPullRoleDefinitionID
