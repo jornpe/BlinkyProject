@@ -19,7 +19,7 @@ stages:
           name: RunPreflightValidation
           displayName: Run preflight validation
           inputs:
-            azureSubscription: Blinkey-${{ parameters.environmentType }}
+            azureSubscription: Blinkey-Subscription
             scriptType: 'bash'
             scriptLocation: 'inlineScript'
             inlineScript: |
@@ -48,7 +48,7 @@ stages:
               name: DeployBicepFile
               displayName: Deploy Bicep file
               inputs:
-                azureSubscription: Blinkey-${{ parameters.environmentType }}
+                azureSubscription: Blinkey-Subscription
                 scriptType: 'bash'
                 scriptLocation: 'inlineScript'
                 inlineScript: |
