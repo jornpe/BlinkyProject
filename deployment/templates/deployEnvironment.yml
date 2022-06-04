@@ -24,7 +24,7 @@ stages:
             scriptLocation: 'inlineScript'
             inlineScript: |
               az deployment group validate \
-                --resource-group rg-blinkey-${{ parameters.environmentType }}-norwayeast-001 \
+                --resource-group rg-blinkey-'${{ parameters.environmentType }}'-norwayeast-001 \
                 --template-file deployment/blinkey.bicep \
                 --parameters environmentType='${{ environmentType }}'' \
                              containerRegistryName=${{ parameters.registryName }} \
