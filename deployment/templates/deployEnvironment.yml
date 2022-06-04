@@ -4,13 +4,6 @@ parameters:
 - name: registryName
   type: string
 
-variables:
-- name: ServiceConnection
-  value: Blinkey-${{parameters.environmentType}}
-- name: ResourceGroupName
-  value: rg-blinkey-${{parameters.environmentType}}-norwayeast-001
-
-
 stages:
 
 - ${{ if ne(parameters.environmentType, 'prod') }}:
@@ -24,12 +17,12 @@ stages:
           name: RunPreflightValidation
           displayName: Run preflight validation
           inputs:
-            azureSubscription: $(ServiceConnection)
+            azureSubscription: Blinkey-${{parameters.environmentType}}
             scriptType: 'bash'
             scriptLocation: 'inlineScript'
             inlineScript: |
               az deployment group validate \
-                --resource-group $(ResourceGroupName) \
+                --resource-group rg-blinkey-${{parameters.environmentType}}-norwayeast-001 \
                 --template-file deployment/blinkey.bicep \
                 --parameters environmentType=${{environmentType}} \
                              registryName=${{parameters.registryName}}
@@ -52,14 +45,14 @@ stages:
               name: DeployBicepFile
               displayName: Deploy Bicep file
               inputs:
-                azureSubscription: $(ServiceConnection)
+                azureSubscription: Blinkey-${{parameters.environmentType}}
                 scriptType: 'bash'
                 scriptLocation: 'inlineScript'
                 inlineScript: |
                   set -e
                   deploymentOutput=$(az deployment group create \
                     --name $(Build.BuildNumber) \
-                    --resource-group $(ResourceGroupName) \
+                    --resource-group rg-blinkey-${{parameters.environmentType}}-norwayeast-001 \
                     --template-file deployment/blinkey.bicep \
                     --parameters environmentType=${{environmentType}} \
                                  registryName=${{parameters.registryName}}

@@ -24,18 +24,19 @@ stages:
     registryName: $(containerRegistryName)
     serviceConnection: $(serviceConnectionShared)
     ResourceGroupName: $(sharedResourceGroupName)
-    
 
-# # Deploy dev environment
-# - template: templates/deployEnvironment.yml
-#   parameters:
-#     environmentType: 'dev'
-#     registryName: $(containerRegistryName)
-#     containerImageAndTag: $(dockerImageNameAndTag)
 
-# # Deploy prod environment
-# - template: templates/deployEnvironment.yml
-#   parameters:
-#     environmentType: 'prod'
-#     registryName: $(containerRegistryName)
-#     containerImageAndTag: $(dockerImageNameAndTag)
+# Deploy dev environment
+- template: templates/deployEnvironment.yml
+  parameters:
+    environmentType: 'dev'
+    registryName: $(containerRegistryName)
+    containerImageAndTag: $(dockerImageNameAndTag)
+    ServiceConnection: 
+
+# Deploy prod environment
+- template: templates/deployEnvironment.yml
+  parameters:
+    environmentType: 'prod'
+    registryName: $(containerRegistryName)
+    containerImageAndTag: $(dockerImageNameAndTag)
