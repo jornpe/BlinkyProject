@@ -29,13 +29,13 @@ stages:
 # Deploy dev environment
 - template: templates/deployEnvironment.yml
   parameters:
-    environmentType: 'dev'
+    environmentType: dev
     registryName: $(containerRegistryName)
     containerImageAndTag: $(dockerImageNameAndTag)
 
 # Deploy prod environment
 - template: templates/deployEnvironment.yml
   parameters:
-    environmentType: 'prod'
+    environmentType: prod
     registryName: $(containerRegistryName)
     containerImageAndTag: $(dockerImageNameAndTag)
