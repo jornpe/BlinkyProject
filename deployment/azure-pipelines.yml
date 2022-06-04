@@ -32,7 +32,6 @@ stages:
     environmentType: 'dev'
     registryName: $(containerRegistryName)
     containerImageAndTag: $(dockerImageNameAndTag)
-    ServiceConnection: 
 
 # Deploy prod environment
 - template: templates/deployEnvironment.yml
