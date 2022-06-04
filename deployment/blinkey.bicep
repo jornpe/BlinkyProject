@@ -43,7 +43,7 @@ module roleAssignment 'modules/roleDefinitionAssignment.bicep' = {
     appService
   ]
   params: {
-    principalId: appService.outputs.appService.identity.id
+    principalId: appService.outputs.appService.identity.principalId
     roleDefinitionId: acrPullRoleDefinitionID
     containerRegistryName: containerRegistryName
   }
