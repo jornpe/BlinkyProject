@@ -1,5 +1,12 @@
 trigger:
-- main
+  branches:
+    include:
+      - main
+      - feature/*
+  paths:
+    exclude:
+      - doc/*
+      - README.md    
 
 pool:
   vmImage: 'ubuntu-latest'
