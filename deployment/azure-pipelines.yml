@@ -22,7 +22,7 @@ stages:
 
 # Build and test web app
 - stage: Build
-  displayName: Build, test and deploy web app
+  displayName: Build and test web app
   jobs:
     - template: templates/build.yml
 

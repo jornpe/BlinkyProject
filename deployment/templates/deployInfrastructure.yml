@@ -22,7 +22,7 @@ stages:
             inlineScript: |
               az deployment sub validate \
                 --location norwayeast \
-                --template-file deployment/blinkey.bicep \
+                --template-file deployment/main.bicep \
                 --parameters environmentType=${{ parameters.environmentType }} \
                              deploymentId=$(Build.BuildNumber)
 
@@ -52,6 +52,6 @@ stages:
                   az deployment sub create \
                     --location norwayeast \
                     --name $(Build.BuildNumber) \
-                    --template-file deployment/blinkey.bicep \
+                    --template-file deployment/main.bicep \
                     --parameters environmentType=${{ parameters.environmentType }} \
                                  deploymentId=$(Build.BuildNumber)
