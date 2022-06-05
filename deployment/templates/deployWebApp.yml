@@ -18,7 +18,7 @@ jobs:
 
   - task: Docker@2
     inputs:
-      containerRegistry: 'testAcr'
+      containerRegistry: 'Blinkey-Acr'
       repository: $(dockerImageName)
       command: 'buildAndPush'
       Dockerfile: '$(System.DefaultWorkingDirectory)/src/WebApp/Dockerfile'

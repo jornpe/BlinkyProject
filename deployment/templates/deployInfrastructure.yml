@@ -20,8 +20,8 @@ stages:
             scriptType: 'bash'
             scriptLocation: 'inlineScript'
             inlineScript: |
-              az deployment group validate \
-                --resource-group rg-blinkey-${{ parameters.environmentType }}-norwayeast-001 \
+              az deployment sub validate \
+                --location norwayeast \
                 --template-file deployment/blinkey.bicep \
                 --parameters environmentType=${{ parameters.environmentType }} \
                              deploymentId=$(Build.BuildNumber)
@@ -49,9 +49,9 @@ stages:
                 scriptType: 'bash'
                 scriptLocation: 'inlineScript'
                 inlineScript: |
-                  az deployment group create \
+                  az deployment sub create \
+                    --location norwayeast \
                     --name $(Build.BuildNumber) \
-                    --resource-group rg-blinkey-${{ parameters.environmentType }}-norwayeast-001 \
                     --template-file deployment/blinkey.bicep \
                     --parameters environmentType=${{ parameters.environmentType }} \
                                  deploymentId=$(Build.BuildNumber)
