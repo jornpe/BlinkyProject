@@ -2,7 +2,6 @@ param roleDefinitionId string
 param principalId string
 param containerRegistryName string
 
-
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existing = {
   name: containerRegistryName
 }
@@ -13,5 +12,6 @@ resource appServiceAcrPullRoleAssignment 'Microsoft.Authorization/roleAssignment
   properties: {
     principalId: principalId
     roleDefinitionId: roleDefinitionId
+    principalType: 'ServicePrincipal'
   }
 }

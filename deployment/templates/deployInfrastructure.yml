@@ -1,16 +1,13 @@
 parameters:
 - name: environmentType
   type: string
-- name: registryName
-  type: string
-- name: containerImageAndTag
-  type: string
 
 stages:
 
 - ${{ if eq(parameters.environmentType, 'dev') }}:
   - stage: Validate_${{ parameters.environmentType }}
     displayName: Validate (${{ parameters.environmentType }} environment)
+    condition: succeeded()
     jobs:
     - job: ValidateBicepCode
       displayName: Validate Bicep code
@@ -27,11 +24,11 @@ stages:
                 --resource-group rg-blinkey-${{ parameters.environmentType }}-norwayeast-001 \
                 --template-file deployment/blinkey.bicep \
                 --parameters environmentType=${{ parameters.environmentType }} \
-                             containerRegistryName=${{ parameters.registryName }} \
-                             containerImageAndTag=${{ parameters.containerImageAndTag }}
+                             deploymentId=$(Build.BuildNumber)
 
 - stage: Deploy_${{ parameters.environmentType }}
   displayName: Deploy (${{ parameters.environmentType }} Infrastructure)
+  condition: succeeded()
   jobs:
   - deployment: DeployInfrastructure
     displayName: Deploy Infrastructure
@@ -57,5 +54,4 @@ stages:
                     --resource-group rg-blinkey-${{ parameters.environmentType }}-norwayeast-001 \
                     --template-file deployment/blinkey.bicep \
                     --parameters environmentType=${{ parameters.environmentType }} \
-                                 containerRegistryName=${{ parameters.registryName }} \
-                                 containerImageAndTag=${{ parameters.containerImageAndTag }}
+                                 deploymentId=$(Build.BuildNumber)

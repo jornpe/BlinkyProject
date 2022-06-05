@@ -1,12 +1,5 @@
 @description('Location to use for the resources')
-param location string = resourceGroup().location
-
-@description('Environment to deploy')
-@allowed([
-  'prod'
-  'dev'
-])
-param environmentType string
+param location string
 
 @description('Name of the container registry instance')
 param containerRegistryName string
@@ -14,29 +7,30 @@ param containerRegistryName string
 @description('The name:tag of the image to use')
 param containerImageAndTag string
 
-var sharedInfrastructureRg = 'rg-blinkey-shared-norwayeast-001'
-var appServicePlanName = 'plan-blinkey-${environmentType}'
-var appServiceName = 'app-blinkey-${environmentType}'
-var containerSpecs = 'DOCKER|${containerRegistry.properties.loginServer}/${containerImageAndTag}'
-var acrPullRoleDefinitionID = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
+param sharedInfrastructureRg string
+param appServicePlanName string
+param appServiceName string
 
+var containerSpec = 'DOCKER|${containerRegistry.properties.loginServer}/${containerImageAndTag}'
+var acrPullRoleDefinitionID = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
 
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existing = {
   name: containerRegistryName
   scope: resourceGroup(sharedInfrastructureRg)
 }
 
-module appService 'modules/AppService.bicep' = {
-  name: 'appServiceDeploy'
+
+module appService 'Website.bicep' = {
+  name: 'Deploy_${appServiceName}'
   params: {
     appServiceName: appServiceName
     appServicePlanName: appServicePlanName
-    containerSpecs: containerSpecs
+    containerSpecs: containerSpec
     location: location
   }
 }
 
-module roleAssignment 'modules/roleDefinitionAssignment.bicep' = {
+module roleAssignment 'roleDefinitionAssignment.bicep' = {
   name: 'appServiceAcrPullRoleAssignment'
   scope: resourceGroup(sharedInfrastructureRg)
   dependsOn: [

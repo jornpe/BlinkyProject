@@ -20,29 +20,33 @@ variables:
 
 stages:
 
+# Build and test web app
 - stage: Build
-  displayName: Build and test
+  displayName: Build, test and deploy web app
   jobs:
     - template: templates/build.yml
 
-# Deploy shared infrastructure
-- template: templates/deploySharedInfrastructure.yml
-  parameters:
-    registryName: $(containerRegistryName)
-    serviceConnection: $(serviceConnectionShared)
-    ResourceGroupName: $(sharedResourceGroupName)
-
+# Linting the deployment script
+- stage: Lint
+  displayName: Linting the deployment file(s)
+  jobs:
+    - template: templates/lint.yml
 
 # Deploy dev environment
-- template: templates/deployEnvironment.yml
+- template: templates/deployInfrastructure.yml
   parameters:
     environmentType: dev
-    registryName: $(containerRegistryName)
-    containerImageAndTag: $(dockerImageNameAndTag)
 
 # Deploy prod environment
-- template: templates/deployEnvironment.yml
+- template: templates/deployInfrastructure.yml
   parameters:
     environmentType: prod
-    registryName: $(containerRegistryName)
-    containerImageAndTag: $(dockerImageNameAndTag)
+
+# Test, build and deploy container web app
+- stage: Deploy_Webapp
+  displayName: Deploy web app
+  jobs:
+    - template: templates/deployWebApp.yml
+      parameters:
+        dockerImageName: 'blinkey'
+        containerRegistry: 'crblinkeyshared001'
