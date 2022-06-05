@@ -7,10 +7,8 @@ parameters:
 jobs:
 - job: Build_image
   displayName: Build and push container image
-  dependsOn: Build
-  condition: succeeded('Build')
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'ubuntu-latest'
 
   steps:
   - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
