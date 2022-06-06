@@ -10,7 +10,7 @@ stages:
     condition: succeeded()
     jobs:
     - job: ValidateBicepCode
-      displayName: Validate Bicep code
+      displayName: Validate bicep files
       steps:
         - task: AzureCLI@2
           name: RunPreflightValidation
@@ -31,7 +31,7 @@ stages:
   condition: succeeded()
   jobs:
   - deployment: DeployInfrastructure
-    displayName: Deploy Infrastructure
+    displayName: Deploy ${{ parameters.environmentType }} Infrastructure
     ${{ if eq(parameters.environmentType, 'dev') }}:
       environment: 'Blinkey development'
     ${{ else }}:

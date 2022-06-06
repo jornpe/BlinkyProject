@@ -21,10 +21,10 @@ variables:
 stages:
 
 # Build and test web app
-- stage: Build
-  displayName: Build and test web app
-  jobs:
-    - template: templates/build.yml
+# - stage: Build
+#   displayName: Build and test web app
+#   jobs:
+#     - template: templates/build.yml
 
 # Linting the deployment script
 - stage: Lint
