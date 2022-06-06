@@ -12,7 +12,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  dockerImageNameAndTag: 'blinkey:$(Build.BuildNumber)'
+  dockerImageName: 'blinkey'
+  dockerImageNameAndTag: '$(dockerImageName):$(Build.BuildNumber)'
   containerRegistryName: 'crblinkeyshared001'
 
 stages:
@@ -44,6 +45,7 @@ stages:
       parameters:
         dockerImageNameAndTag: $(dockerImageNameAndTag)
         containerRegistry: $(containerRegistryName)
+        dockerImageName: $(dockerImageName)
 
 # Deploy prod environment
 - template: templates/deployInfrastructure.yml

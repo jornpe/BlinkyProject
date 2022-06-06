@@ -3,6 +3,8 @@ parameters:
   type: string
 - name: dockerImageNameAndTag
   type: string
+- name: dockerImageName
+  type: string
 
 jobs:
 - job: Build_image
@@ -22,6 +24,7 @@ jobs:
     displayName: Build image
     inputs:
       command: build
+      repository: '${{ parameters.dockerImageName }}'
       dockerfile: '$(System.DefaultWorkingDirectory)/src/WebApp/Dockerfile'
       buildContext: '$(System.DefaultWorkingDirectory)/src/WebApp'
       tags: $(Build.BuildNumber)
@@ -46,5 +49,4 @@ jobs:
       inlineScript: |
         az acr login -n ${{ parameters.containerRegistry }}
         $imageSpec = "${{ parameters.containerRegistry }}.azurecr.io/${{ parameters.dockerImageNameAndTag }}"
-        docker tag ${{ parameters.dockerImageNameAndTag }} $imageSpec
         docker push $imageSpec
