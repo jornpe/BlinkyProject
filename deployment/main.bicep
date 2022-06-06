@@ -6,13 +6,12 @@ targetScope = 'subscription'
   'prod'
 ])  
 param environmentType string
-param deploymentId string
+param containerNameandTag string
+param containerRegistryName string
 param location string = 'norwayeast'
 param shardRgName string = 'rg-blinkey-shared-${location}-001'
 param environmentRgName string = 'rg-blinkey-${environmentType}-${location}-001'
 
-var containerNameandTag = 'blinkey:${deploymentId}'
-var containerRegistryName = 'crblinkeyshared001'
 var appServiceName = 'app-blinkey-${environmentType}'
 var appServicePlanName = 'plan-blinkey-${environmentType}'
 

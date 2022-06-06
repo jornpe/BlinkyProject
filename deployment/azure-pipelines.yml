@@ -12,11 +12,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  webAppName: BlinkeyWebbApp
   dockerImageNameAndTag: 'blinkey:$(Build.BuildNumber)'
   containerRegistryName: 'crblinkeyshared001'
-  serviceConnectionShared: 'Blinkey-shared'
-  sharedResourceGroupName: 'rg-blinkey-shared-norwayeast-001'
 
 stages:
 
@@ -36,17 +33,21 @@ stages:
 - template: templates/deployInfrastructure.yml
   parameters:
     environmentType: dev
+    containerRegistryName: $(containerRegistryName)
+    dockerImageNameAndTag: $(dockerImageNameAndTag)
+
+# Test, build and push container image
+- stage: Push-image
+  displayName: Build and push image
+  jobs:
+    - template: templates/DockerImage.yml
+      parameters:
+        dockerImageNameAndTag: $(dockerImageNameAndTag)
+        containerRegistry: $(containerRegistryName)
 
 # Deploy prod environment
 - template: templates/deployInfrastructure.yml
   parameters:
     environmentType: prod
-
-# Test, build and deploy container web app
-- stage: Deploy_Webapp
-  displayName: Deploy web app
-  jobs:
-    - template: templates/deployWebApp.yml
-      parameters:
-        dockerImageName: 'blinkey'
-        containerRegistry: 'crblinkeyshared001'
+    containerRegistryName: $(containerRegistryName)
+    dockerImageNameAndTag: $(dockerImageNameAndTag)

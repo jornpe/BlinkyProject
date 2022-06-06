@@ -1,6 +1,10 @@
 parameters:
 - name: environmentType
   type: string
+- name: containerRegistryName
+  type: string
+- name: dockerImageNameAndTag
+  type: string
 
 stages:
 
@@ -24,7 +28,8 @@ stages:
                 --location norwayeast \
                 --template-file deployment/main.bicep \
                 --parameters environmentType=${{ parameters.environmentType }} \
-                             deploymentId=$(Build.BuildNumber)
+                             containerNameandTag=${{ parameters.dockerImageNameAndTag }} \
+                             containerRegistryName=${{ parameters.containerRegistryName }}
 
 - stage: Deploy_${{ parameters.environmentType }}
   displayName: Deploy ${{ parameters.environmentType }} environment
@@ -54,4 +59,5 @@ stages:
                     --name $(Build.BuildNumber) \
                     --template-file deployment/main.bicep \
                     --parameters environmentType=${{ parameters.environmentType }} \
-                                 deploymentId=$(Build.BuildNumber)
+                                 containerNameandTag=${{ parameters.dockerImageNameAndTag }} \
+                                 containerRegistryName=${{ parameters.containerRegistryName }}
