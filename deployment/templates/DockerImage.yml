@@ -45,5 +45,6 @@ jobs:
       scriptLocation: 'inlineScript'
       inlineScript: |
         az acr login -n ${{ parameters.containerRegistry }}
-        docker tag ${{ parameters.dockerImageNameAndTag }} ${{ parameters.containerRegistry }}.azurecr.io/${{ parameters.dockerImageNameAndTag }}
-        docker push '${{ parameters.containerRegistry }}.azurecr.io/${{ parameters.dockerImageNameAndTag }}'
+        $imageSpec = "${{ parameters.containerRegistry }}.azurecr.io/${{ parameters.dockerImageNameAndTag }}"
+        docker tag ${{ parameters.dockerImageNameAndTag }} $imageSpec
+        docker push $imageSpec
