@@ -48,5 +48,7 @@ jobs:
       scriptLocation: 'inlineScript'
       inlineScript: |
         az acr login -n ${{ parameters.containerRegistry }}
+        docker images
         $imageSpec = "${{ parameters.containerRegistry }}.azurecr.io/${{ parameters.dockerImageNameAndTag }}"
+        docker tag ${{ parameters.dockerImageNameAndTag }} $imageSpec
         docker push $imageSpec
