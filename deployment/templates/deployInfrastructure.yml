@@ -27,7 +27,7 @@ stages:
                              deploymentId=$(Build.BuildNumber)
 
 - stage: Deploy_${{ parameters.environmentType }}
-  displayName: Deploy (${{ parameters.environmentType }} Infrastructure)
+  displayName: Deploy ${{ parameters.environmentType }} environment
   condition: succeeded()
   jobs:
   - deployment: DeployInfrastructure
