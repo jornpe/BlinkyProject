@@ -37,7 +37,7 @@ stages:
     dockerImageNameAndTag: $(dockerImageNameAndTag)
 
 # Test, build and push container image
-- stage: Push-image
+- stage: PushImage
   displayName: Build and push image
   jobs:
     - template: templates/DockerImage.yml
