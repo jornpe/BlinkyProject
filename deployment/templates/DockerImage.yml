@@ -38,11 +38,12 @@ jobs:
   - task: AzureCLI@2
     name: PushImage
     displayName: Push docker image
-    condition: succeeded('Build_image')
+    condition: succeeded()
     inputs:
       azureSubscription: Blinkey-Subscription
       scriptType: 'pscore'
       scriptLocation: 'inlineScript'
       inlineScript: |
         az acr login -n ${{ parameters.containerRegistry }}
+        docker tag ${{ parameters.dockerImageNameAndTag }} ${{ parameters.containerRegistry }}.azurecr.io/${{ parameters.dockerImageNameAndTag }}
         docker push '${{ parameters.containerRegistry }}.azurecr.io/${{ parameters.dockerImageNameAndTag }}'
