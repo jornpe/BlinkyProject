@@ -73,9 +73,9 @@ stages:
             #       az 
                     
                 
-            - task: AzureWebAppContainer@1
-              displayName: Deploy container app
-              inputs:
-                appName: 'app-blinkey-${{ parameters.environmentType }}'
-                azureSubscription: Blinkey-Subscription
-                imageName: '${{ parameters.containerRegistryName }}.azurecr.io/${{ parameters.dockerImageNameAndTag }}'
+            # - task: AzureWebAppContainer@1
+            #   displayName: Deploy container app
+            #   inputs:
+            #     appName: 'app-blinkey-${{ parameters.environmentType }}'
+            #     azureSubscription: Blinkey-Subscription
+            #     imageName: '${{ parameters.containerRegistryName }}.azurecr.io/${{ parameters.dockerImageNameAndTag }}'
