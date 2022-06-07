@@ -61,21 +61,3 @@ stages:
                     --parameters environmentType=${{ parameters.environmentType }} \
                                  containerNameandTag=${{ parameters.dockerImageNameAndTag }} \
                                  containerRegistryName=${{ parameters.containerRegistryName }}
-
-            # - task: AzureCLI@2
-            #   name: DeployBicepFile
-            #   displayName: Deploy we abb container
-            #   inputs:
-            #     azureSubscription: Blinkey-Subscription
-            #     scriptType: 'bash'
-            #     scriptLocation: 'inlineScript'
-            #     inlineScript: |
-            #       az 
-                    
-                
-            # - task: AzureWebAppContainer@1
-            #   displayName: Deploy container app
-            #   inputs:
-            #     appName: 'app-blinkey-${{ parameters.environmentType }}'
-            #     azureSubscription: Blinkey-Subscription
-            #     imageName: '${{ parameters.containerRegistryName }}.azurecr.io/${{ parameters.dockerImageNameAndTag }}'
