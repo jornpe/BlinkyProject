@@ -53,6 +53,7 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2021-03-01' = {
     httpLogs: {
        fileSystem: {
          retentionInMb: 40
+         retentionInDays: 7
          enabled: true
        }
     }
