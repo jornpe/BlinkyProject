@@ -12,37 +12,44 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  webAppName: BlinkeyWebbApp
-  dockerImageNameAndTag: 'blinkey:$(Build.BuildNumber)'
+  dockerImageName: 'blinkey'
+  dockerImageNameAndTag: '$(dockerImageName):$(Build.BuildNumber)'
   containerRegistryName: 'crblinkeyshared001'
-  serviceConnectionShared: 'Blinkey-shared'
-  sharedResourceGroupName: 'rg-blinkey-shared-norwayeast-001'
 
 stages:
 
-- stage: Build
-  displayName: Build and test
+# Build and test web app
+# - stage: Build
+#   displayName: Build and test web app
+#   jobs:
+#     - template: templates/build.yml
+
+# Linting the deployment script
+- stage: Lint
+  displayName: Linting the deployment file(s)
   jobs:
-    - template: templates/build.yml
-
-# Deploy shared infrastructure
-- template: templates/deploySharedInfrastructure.yml
-  parameters:
-    registryName: $(containerRegistryName)
-    serviceConnection: $(serviceConnectionShared)
-    ResourceGroupName: $(sharedResourceGroupName)
-
+    - template: templates/lint.yml
 
 # Deploy dev environment
-- template: templates/deployEnvironment.yml
+- template: templates/deployInfrastructure.yml
   parameters:
     environmentType: dev
-    registryName: $(containerRegistryName)
-    containerImageAndTag: $(dockerImageNameAndTag)
+    containerRegistryName: $(containerRegistryName)
+    dockerImageNameAndTag: $(dockerImageNameAndTag)
+
+# Test, build and push container image
+- stage: PushImage
+  displayName: Build and push image
+  jobs:
+    - template: templates/DockerImage.yml
+      parameters:
+        dockerImageNameAndTag: $(dockerImageNameAndTag)
+        containerRegistry: $(containerRegistryName)
+        dockerImageName: $(dockerImageName)
 
 # Deploy prod environment
-- template: templates/deployEnvironment.yml
+- template: templates/deployInfrastructure.yml
   parameters:
     environmentType: prod
-    registryName: $(containerRegistryName)
-    containerImageAndTag: $(dockerImageNameAndTag)
+    containerRegistryName: $(containerRegistryName)
+    dockerImageNameAndTag: $(dockerImageNameAndTag)

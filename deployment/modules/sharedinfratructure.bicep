@@ -1,5 +1,5 @@
 @description('Location to use for the resources')
-param location string = resourceGroup().location
+param location string
 
 @description('Name of the container registry instance')
 param registryName string

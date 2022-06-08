@@ -1,0 +1,54 @@
+parameters:
+- name: containerRegistry
+  type: string
+- name: dockerImageNameAndTag
+  type: string
+- name: dockerImageName
+  type: string
+
+jobs:
+- job: Build_image
+  displayName: Build and push container image
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
+    lfs: true
+    clean: true  # if true, execute `execute git clean -ffdx && git reset --hard HEAD` before fetching
+    persistCredentials: true  # if 'true', leave the OAuth token in the Git config after the initial fetch; defaults to false
+
+
+  - task: Docker@2
+    name: Build_image
+    displayName: Build image
+    inputs:
+      command: build
+      repository: '${{ parameters.dockerImageName }}'
+      dockerfile: '$(System.DefaultWorkingDirectory)/src/WebApp/Dockerfile'
+      buildContext: '$(System.DefaultWorkingDirectory)/src/WebApp'
+      tags: $(Build.BuildNumber)
+  
+  # - task: Docker@2
+  #   inputs:
+  #     containerRegistry: 'Blinkey-Acr'
+  #     repository: '${{ parameters.dockerImageName }}'
+  #     command: 'build'
+  #     Dockerfile: '$(System.DefaultWorkingDirectory)/src/WebApp/Dockerfile'
+  #     buildContext: '$(System.DefaultWorkingDirectory)/src/WebApp'
+  #     tags: $(Build.BuildNumber)
+
+  - task: AzureCLI@2
+    name: PushImage
+    displayName: Push docker image
+    condition: succeeded()
+    inputs:
+      azureSubscription: Blinkey-Subscription
+      scriptType: 'pscore'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az acr login -n ${{ parameters.containerRegistry }}
+        docker images
+        $imageSpec = "${{ parameters.containerRegistry }}.azurecr.io/${{ parameters.dockerImageNameAndTag }}"
+        docker tag ${{ parameters.dockerImageNameAndTag }} $imageSpec
+        docker push $imageSpec

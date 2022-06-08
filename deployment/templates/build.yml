@@ -1,6 +1,6 @@
 jobs:
 - job: Build
-  displayName: Build web app
+  displayName: Build amd test web app
   pool:
     vmImage: 'windows-latest'
 

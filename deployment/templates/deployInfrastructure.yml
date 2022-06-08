@@ -1,0 +1,63 @@
+parameters:
+- name: environmentType
+  type: string
+- name: containerRegistryName
+  type: string
+- name: dockerImageNameAndTag
+  type: string
+
+stages:
+
+- ${{ if eq(parameters.environmentType, 'dev') }}:
+  - stage: Validate_${{ parameters.environmentType }}
+    displayName: Validate (${{ parameters.environmentType }} environment)
+    condition: succeeded()
+    jobs:
+    - job: ValidateBicepCode
+      displayName: Validate bicep files
+      steps:
+        - task: AzureCLI@2
+          name: RunPreflightValidation
+          displayName: Run preflight validation
+          inputs:
+            azureSubscription: Blinkey-Subscription
+            scriptType: 'bash'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              az deployment sub validate \
+                --location norwayeast \
+                --template-file deployment/main.bicep \
+                --parameters environmentType=${{ parameters.environmentType }} \
+                             containerNameandTag=${{ parameters.dockerImageNameAndTag }} \
+                             containerRegistryName=${{ parameters.containerRegistryName }}
+
+- stage: Deploy_${{ parameters.environmentType }}
+  displayName: Deploy ${{ parameters.environmentType }} environment
+  condition: succeeded()
+  jobs:
+  - deployment: DeployInfrastructure
+    displayName: Deploy ${{ parameters.environmentType }} Infrastructure
+    ${{ if eq(parameters.environmentType, 'dev') }}:
+      environment: 'Blinkey development'
+    ${{ else }}:
+      environment: 'Blinkey production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+            - task: AzureCLI@2
+              name: DeployBicepFile
+              displayName: Deploy Bicep file
+              inputs:
+                azureSubscription: Blinkey-Subscription
+                scriptType: 'bash'
+                scriptLocation: 'inlineScript'
+                inlineScript: |
+                  az deployment sub create \
+                    --location norwayeast \
+                    --name $(Build.BuildNumber) \
+                    --template-file deployment/main.bicep \
+                    --parameters environmentType=${{ parameters.environmentType }} \
+                                 containerNameandTag=${{ parameters.dockerImageNameAndTag }} \
+                                 containerRegistryName=${{ parameters.containerRegistryName }}
