@@ -29,7 +29,6 @@ resource serviceBusQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {
     deadLetteringOnMessageExpiration: true
     enableExpress: false
     enablePartitioning: false
-    autoDeleteOnIdle: 'P10675199DT2H48M5.4775807S'
     defaultMessageTimeToLive: 'P1D'
     duplicateDetectionHistoryTimeWindow: 'PT10M'
     lockDuration: 'PT30S'
