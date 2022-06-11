@@ -1,0 +1,72 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.6.18.56646",
+      "templateHash": "11471815154113787017"
+    }
+  },
+  "parameters": {
+    "iotHubName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "sbQueueEndpointUri": {
+      "type": "string"
+    },
+    "sbQueueName": {
+      "type": "string"
+    },
+    "environmentType": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "sbqEndpointName": "[format('ep-sbq-{0}-{1}', parameters('environmentType'), parameters('location'))]",
+    "routeName": "[format('deviceroute-{0}-{1}', parameters('environmentType'), parameters('location'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Devices/IotHubs",
+      "apiVersion": "2021-07-02",
+      "name": "[parameters('iotHubName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "F1",
+        "capacity": 1
+      },
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "routing": {
+          "endpoints": {
+            "serviceBusQueues": [
+              {
+                "endpointUri": "[parameters('sbQueueEndpointUri')]",
+                "entityPath": "[parameters('sbQueueName')]",
+                "authenticationType": "identityBased",
+                "name": "[variables('sbqEndpointName')]"
+              }
+            ]
+          },
+          "routes": [
+            {
+              "name": "[variables('routeName')]",
+              "source": "DeviceMessages",
+              "condition": "true",
+              "endpointNames": [
+                "[variables('sbqEndpointName')]"
+              ],
+              "isEnabled": true
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

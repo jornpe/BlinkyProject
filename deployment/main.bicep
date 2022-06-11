@@ -12,9 +12,6 @@ param location string = 'norwayeast'
 param shardRgName string = 'rg-blinkey-shared-${location}-001'
 param environmentRgName string = 'rg-blinkey-${environmentType}-${location}-001'
 
-var appServiceName = 'app-blinkey-${environmentType}'
-var appServicePlanName = 'plan-blinkey-${environmentType}'
-
 resource sharedResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: shardRgName
   location: location
@@ -25,7 +22,7 @@ resource environmentRg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   location: location
 }
 
-module sharedInfrastructureDeployment 'modules/sharedinfratructure.bicep' = {
+module sharedInfrastructureDeployment 'modules/containerRegistry.bicep' = {
   scope: sharedResourceGroup
   name: 'Deployment_for_shared_infrastructure'
   params: {
@@ -44,9 +41,9 @@ module blinkeyDeployment 'modules/blinkey.bicep' = {
     location: location
     containerImageAndTag: containerNameandTag
     containerRegistryName: containerRegistryName
-    appServiceName: appServiceName
-    appServicePlanName: appServicePlanName
-    sharedInfrastructureRg:sharedResourceGroup.name
+    sharedInfrastructureRgName :sharedResourceGroup.name
+    environmentType: environmentType
   }
 }
+
 
