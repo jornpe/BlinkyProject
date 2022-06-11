@@ -16,7 +16,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-07-02' = {
   name: iotHubName
   location: location
   sku: {
-    name: 'F1'
+    name: 'B1'
     capacity: 1
   }
   identity: {
