@@ -28,7 +28,7 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-12-01-pr
 }
 
 module serviceBus 'serviceBus.bicep' = {
-  name: 'sb-${environmentType}'
+  name: 'ServiceBusAndQueue-${environmentType}'
   params: {
     serviceBusNamespaceName: serviceBusName
     serviceBusQueueName: serviceBusQueueName
@@ -37,7 +37,7 @@ module serviceBus 'serviceBus.bicep' = {
 }
 
 module appService 'website.bicep' = {
-  name: 'appService-${environmentType}'
+  name: 'AppService-${environmentType}'
   params: {
     appServiceName: appServiceName
     appServicePlanName: appServicePlanName
@@ -50,18 +50,22 @@ module appService 'website.bicep' = {
 }
 
 module IotHub 'iotHub.bicep' = {
-  name: 'IoyHub-${environmentType}'
+  name: 'IotHub-${environmentType}'
   params: {
     environmentType: environmentType
     iotHubName: iotHubName
     location: location
     sbQueueEndpointUri: sbQueueEndpointUri
     sbQueueName: serviceBusQueueName
+    serviceBusName: serviceBusName
   }
+  dependsOn: [
+    serviceBus
+  ]
 }
 
 module acrRoleAssignment 'roleAssignments/assignContainerPullRole.bicep' = {
-  name: 'appServiceAcrPullRoleAssignment'
+  name: 'ACRpullRoleAssignmentForAppService'
   scope: resourceGroup(sharedInfrastructureRgName)
   dependsOn: [
     appService
@@ -72,18 +76,18 @@ module acrRoleAssignment 'roleAssignments/assignContainerPullRole.bicep' = {
   }
 }
 
-module appServiceSbSenderRoleAssignment 'roleAssignments/assignMessageQueueRole.bicep' = {
-  name: 'appServicesbSenderRoleAssignment'
-  dependsOn: [
-    serviceBus
-    IotHub
-    appService
-  ]
-  params: {
-    messageBusName: serviceBusName
-    principalIds: [
-      serviceBus.outputs.serviceBusPrincipalId
-      IotHub.outputs.iotHubPrincipalId
-    ]
-  }
-}
+// module appServiceSbSenderRoleAssignment 'roleAssignments/assignMessageQueueRole.bicep' = {
+//   name: 'appServicesbSenderRoleAssignment'
+//   dependsOn: [
+//     serviceBus
+//     IotHub
+//     appService
+//   ]
+//   params: {
+//     messageBusName: serviceBusName
+//     principalIds: [
+//       serviceBus.outputs.serviceBusPrincipalId
+//       IotHub.outputs.iotHubPrincipalId
+//     ]
+//   }
+// }

@@ -33,7 +33,7 @@ module sharedInfrastructureDeployment 'modules/containerRegistry.bicep' = {
 
 module blinkeyDeployment 'modules/blinkey.bicep' = {
   scope: environmentRg
-  name: 'Deployment_for_blinkey_in_${environmentType == 'prod' ? 'production' : 'development'}_environment'
+  name: 'DeploymentintBlinkey-${environmentType == 'prod' ? 'production' : 'development'}'
   dependsOn:[
     sharedInfrastructureDeployment
   ]
