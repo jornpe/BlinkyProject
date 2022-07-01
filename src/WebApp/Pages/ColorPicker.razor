@@ -1,0 +1,26 @@
+﻿@page "/colorpicker"
+
+<PageTitle>colorPicker</PageTitle>
+
+<h3>ColorPicker</h3>
+
+<div class="col-6 text-left align-middle pt-4 pl-5">
+    <h4 class="my-4">Choose T-Shirt color</h4>
+        <RadzenCard Class="mx-auto d-flex" Style="width: fit-content;">
+            <div class="d-flex">
+                <RadzenColorPicker @bind-Value=@color Change=@OnColorChanged ShowButton=true/>
+                <RadzenLabel Text=@color Component="HSV" Style="margin-left: 8px; margin-right: 32px; vertical-align: middle;" />
+            </div>
+        </RadzenCard>
+</div>
+
+
+
+@code {
+    string color = "";
+
+    string newColor = "";
+
+    void OnColorChanged(string value) => newColor = $"Value changed to {value}";
+    
+}
