@@ -1,8 +1,8 @@
 ﻿
 using System.Text;
+using System.Text.Json;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 
 var config = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -68,6 +68,6 @@ static string CreateMessage(Random rand)
         temp = rand.Next(-20, 20),
         humidity = rand.Next(0, 100)
     };
-    return JsonConvert.SerializeObject(data);
+    return JsonSerializer.Serialize(data);
 }
 

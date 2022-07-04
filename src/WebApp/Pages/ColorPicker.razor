@@ -1,8 +1,25 @@
 ﻿@page "/colorpicker"
 
+@using WebApp.Messages
+@using WebApp.Services
+@inject DeviceTwinService deviceTwinService
+@inject IotDevicesService iotDeviceService
+@inject ILogger<ColorPicker> logger
+@inject IJSRuntime JsRuntime
+
 <PageTitle>colorPicker</PageTitle>
 
-<h3>ColorPicker</h3>
+<h3>Color Picker tool</h3>
+
+@if (devices is not null)
+{
+    <ul>
+        @foreach (var device in devices)
+        {
+            <li>@device</li>
+        }
+    </ul>
+}
 
 <div class="col-6 text-left align-middle pt-4 pl-5">
     <h4 class="my-4">Choose T-Shirt color</h4>
@@ -14,13 +31,45 @@
         </RadzenCard>
 </div>
 
+<p>@errorMsg</p>
+<p>@stackTrace</p>
 
 
 @code {
     string color = "";
 
-    string newColor = "";
+    string errorMsg = "";
+    string stackTrace = "";
 
-    void OnColorChanged(string value) => newColor = $"Value changed to {value}";
-    
+    List<string>? devices;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            devices = await iotDeviceService.GetDevicesIdsAsync();
+        }
+        catch (Exception e)
+        {
+            errorMsg = e.Message;
+            stackTrace = e.StackTrace + e.InnerException?.StackTrace;
+            await JsRuntime.InvokeAsync<string>("console.log", e.StackTrace);
+        }
+    }
+
+    async Task OnColorChanged(string value)
+    {
+        var colorMessage = new ColorUpdateMessage { Color = value };
+
+        try
+        {
+            await deviceTwinService.SendCouldToDeviceMessage(colorMessage);
+        }
+        catch (Exception e)
+        {
+            errorMsg = e.Message;
+            stackTrace = e.StackTrace + e.InnerException?.StackTrace;
+            await JsRuntime.InvokeAsync<string>("console.log", e.StackTrace);
+        }
+    }
 }
