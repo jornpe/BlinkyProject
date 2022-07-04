@@ -2,13 +2,7 @@ param appServicePlanName string
 param location string
 param appServiceName string
 param containerSpecs string
-
-// var appSettings = [
-//   {
-//     name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE:'
-//     value: false
-//   }
-// ]
+param iotHubHostName string
 
 resource appservicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   name: appServicePlanName
@@ -33,7 +27,6 @@ resource appService 'Microsoft.Web/sites@2021-03-01' = {
       acrUseManagedIdentityCreds: true
       linuxFxVersion: containerSpecs
       minTlsVersion: '1.2'
-      //appSettings: appSettings
     }
   }
   identity: {
@@ -41,7 +34,15 @@ resource appService 'Microsoft.Web/sites@2021-03-01' = {
   }
 }
 
-resource appServiceConfig 'Microsoft.Web/sites/config@2021-03-01' = {
+resource appServiceAppConfig 'Microsoft.Web/sites/config@2021-03-01' = {
+  name: 'appsettings'
+  parent: appService
+  properties: {
+    IotHubOptions__HostName: iotHubHostName
+  }
+}
+
+resource appServiceLogConfig 'Microsoft.Web/sites/config@2021-03-01' = {
   name: 'logs'
   parent: appService
   properties: {
@@ -67,4 +68,4 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2021-03-01' = {
   
 }
 
-output appService object = appService
+output principalId string = appService.identity.principalId

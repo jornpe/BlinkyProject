@@ -36,19 +36,6 @@ module serviceBus 'serviceBus.bicep' = {
   }
 }
 
-module appService 'website.bicep' = {
-  name: 'AppService-${environmentType}'
-  params: {
-    appServiceName: appServiceName
-    appServicePlanName: appServicePlanName
-    containerSpecs: containerSpec
-    location: location
-  }
-  dependsOn: [
-    serviceBus
-  ]
-}
-
 module IotHub 'iotHub.bicep' = {
   name: 'IotHub-${environmentType}'
   params: {
@@ -64,6 +51,21 @@ module IotHub 'iotHub.bicep' = {
   ]
 }
 
+module appService 'website.bicep' = {
+  name: 'AppService-${environmentType}'
+  params: {
+    appServiceName: appServiceName
+    appServicePlanName: appServicePlanName
+    containerSpecs: containerSpec
+    location: location
+    iotHubHostName: IotHub.outputs.iotHubHostName
+  }
+  dependsOn: [
+    serviceBus
+    IotHub
+  ]
+}
+
 module acrRoleAssignment 'roleAssignments/assignContainerPullRole.bicep' = {
   name: 'ACRpullRoleAssignmentForAppService'
   scope: resourceGroup(sharedInfrastructureRgName)
@@ -71,23 +73,20 @@ module acrRoleAssignment 'roleAssignments/assignContainerPullRole.bicep' = {
     appService
   ]
   params: {
-    principalId: appService.outputs.appService.identity.principalId
+    principalId: appService.outputs.principalId
     containerRegistryName: containerRegistryName
   }
 }
 
-// module appServiceSbSenderRoleAssignment 'roleAssignments/assignMessageQueueRole.bicep' = {
-//   name: 'appServicesbSenderRoleAssignment'
-//   dependsOn: [
-//     serviceBus
-//     IotHub
-//     appService
-//   ]
-//   params: {
-//     messageBusName: serviceBusName
-//     principalIds: [
-//       serviceBus.outputs.serviceBusPrincipalId
-//       IotHub.outputs.iotHubPrincipalId
-//     ]
-//   }
-// }
+module iotHubRoleAssignment 'roleAssignments/iotHubRoleAssignment.bicep' = {
+  name: 'iotHubRoleAssignment'
+  params: {
+    iotHubName: iotHubName
+    principalId: appService.outputs.principalId
+  }
+  dependsOn: [
+    IotHub
+    appService
+  ]
+}
+

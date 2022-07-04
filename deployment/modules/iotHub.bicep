@@ -93,3 +93,6 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-07-02' = {
     }
   }
 }
+
+output iotHubHostName string = iotHub.properties.hostName
+output principalId string = iotHub.identity.principalId
