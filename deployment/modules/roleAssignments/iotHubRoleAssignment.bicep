@@ -17,6 +17,7 @@ resource iotHubDataContributorAssignment 'Microsoft.Authorization/roleAssignment
   properties: {
     principalId: principalId
     roleDefinitionId: iotHubDataContributor.id
+    principalType: 'ServicePrincipal'
   }
 }
 
@@ -32,6 +33,7 @@ resource iotHubRegistryContributorAssignment 'Microsoft.Authorization/roleAssign
   properties: {
     principalId: principalId
     roleDefinitionId: iotHubRegistryContributor.id
+    principalType: 'ServicePrincipal'
   }
 }
 
@@ -47,6 +49,7 @@ resource iotHubTwinContributorAssignment 'Microsoft.Authorization/roleAssignment
   properties: {
     principalId: principalId
     roleDefinitionId: iotHubTwinContributor.id
+    principalType: 'ServicePrincipal'
   }
 }
 
