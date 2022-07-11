@@ -20,7 +20,7 @@ var serviceBusQueueName = 'sbq-blinkeyQueue'
 var sbQueueEndpointUri = 'sb://${serviceBusName}.servicebus.windows.net'
 var containerSpec = 'DOCKER|${containerRegistry.properties.loginServer}/${containerImageAndTag}'
 var iotHubName = 'iot-blinkey-${environmentType}'
-var appConfigName = 'appc-blinkey-${environmentType}'
+var appConfigName = 'appConfig-blinkey-${environmentType}-001'
 var appConfigEndpoint = 'https://${appConfigName}.azconfig.io'
 
 
