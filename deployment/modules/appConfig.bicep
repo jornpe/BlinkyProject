@@ -14,7 +14,7 @@ resource appconfigStore 'Microsoft.AppConfiguration/configurationStores@2022-05-
   name: configStoreName
   location: location
   sku: {
-    name: 'S1'
+    name: 'standard'
   }
   identity: {
     type: 'SystemAssigned'
@@ -29,8 +29,8 @@ resource keyValueConfigPairs 'Microsoft.AppConfiguration/configurationStores/key
   }
 }]
 
-// Role name: "IoT Hub Data Contributor" - Allows for full access to IoT Hub data plane operations. https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#iot-hub-data-contributor
-var appConfigurationDataReaderId = '4fc6c259-987e-4a07-842e-c321cc9d413f'
+// Role name: "App Configuration Data Reader" - Allows read access to App Configuration data. https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#app-configuration-data-reader
+var appConfigurationDataReaderId = '516239f1-63e1-4d78-a4de-a74fb236a071'
 resource appConfigurationDataReader 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   name: appConfigurationDataReaderId
 }

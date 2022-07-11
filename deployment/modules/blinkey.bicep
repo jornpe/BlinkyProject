@@ -20,7 +20,7 @@ var serviceBusQueueName = 'sbq-blinkeyQueue'
 var sbQueueEndpointUri = 'sb://${serviceBusName}.servicebus.windows.net'
 var containerSpec = 'DOCKER|${containerRegistry.properties.loginServer}/${containerImageAndTag}'
 var iotHubName = 'iot-blinkey-${environmentType}'
-var configStoreName = 'appConfig-blinkey-${environmentType}'
+var configStoreName = 'appc-blinkey-${environmentType}'
 
 
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existing = {
@@ -80,7 +80,9 @@ module appConfigStore 'appConfig.bicep' = {
     configStoreName: configStoreName
     keyValues: keyValues
     location: location
-    principalIds: [appService.outputs.principalId]
+    principalIds: [
+      appService.outputs.principalId
+    ]
   }
   dependsOn: [
     IotHub

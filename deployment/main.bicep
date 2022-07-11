@@ -24,7 +24,7 @@ resource environmentRg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 
 module sharedInfrastructureDeployment 'modules/containerRegistry.bicep' = {
   scope: sharedResourceGroup
-  name: 'Deployment_for_shared_infrastructure'
+  name: 'Blinkey-Shared-${environmentType == 'prod' ? 'production' : 'development'}'
   params: {
     registryName: containerRegistryName
     location: location
@@ -33,7 +33,7 @@ module sharedInfrastructureDeployment 'modules/containerRegistry.bicep' = {
 
 module blinkeyDeployment 'modules/blinkey.bicep' = {
   scope: environmentRg
-  name: 'DeploymentintBlinkey-${environmentType == 'prod' ? 'production' : 'development'}'
+  name: 'Blinkey-${environmentType == 'prod' ? 'production' : 'development'}'
   dependsOn:[
     sharedInfrastructureDeployment
   ]
@@ -41,7 +41,7 @@ module blinkeyDeployment 'modules/blinkey.bicep' = {
     location: location
     containerImageAndTag: containerNameandTag
     containerRegistryName: containerRegistryName
-    sharedInfrastructureRgName :sharedResourceGroup.name
+    sharedInfrastructureRgName: sharedResourceGroup.name
     environmentType: environmentType
   }
 }
