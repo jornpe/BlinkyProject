@@ -69,20 +69,20 @@ module appService 'website.bicep' = {
 module acrRoleAssignment 'roleAssignments/assignContainerPullRole.bicep' = {
   name: 'ACRpullRoleAssignmentForAppService'
   scope: resourceGroup(sharedInfrastructureRgName)
-  dependsOn: [
-    appService
-  ]
   params: {
     principalId: appService.outputs.principalId
     containerRegistryName: containerRegistryName
   }
+  dependsOn: [
+    appService
+  ]
 }
 
 module iotHubRoleAssignment 'roleAssignments/iotHubRoleAssignment.bicep' = {
   name: 'iotHubRoleAssignment'
   params: {
-    iotHubName: iotHubName
     principalId: appService.outputs.principalId
+    iotHubName: iotHubName
   }
   dependsOn: [
     IotHub

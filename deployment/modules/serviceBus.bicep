@@ -37,6 +37,5 @@ resource serviceBusQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {
   }
 }
 
-output serviceBusPrincipalId string = serviceBus.identity.principalId
-output sbUrl string = 'sb://${serviceBusQueue.name}.servicebus.windows.net'
+output principalId string = serviceBus.identity.principalId
 
