@@ -2,7 +2,7 @@ param appServicePlanName string
 param location string
 param appServiceName string
 param containerSpecs string
-param iotHubHostName string
+param appConfigEndpoint string
 
 resource appservicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   name: appServicePlanName
@@ -38,7 +38,7 @@ resource appServiceAppConfig 'Microsoft.Web/sites/config@2021-03-01' = {
   name: 'appsettings'
   parent: appService
   properties: {
-    IotHubOptions__HostName: iotHubHostName
+    AppConfig__Endpoint: appConfigEndpoint
   }
 }
 
@@ -65,7 +65,6 @@ resource appServiceLogConfig 'Microsoft.Web/sites/config@2021-03-01' = {
       enabled: true
     }
   }
-  
 }
 
 output principalId string = appService.identity.principalId
