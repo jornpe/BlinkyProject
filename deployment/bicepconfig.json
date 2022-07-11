@@ -1,28 +1,40 @@
 {
-    "analyzers": {
-      "core": {
-        "enabled": true,
-        "verbose": true,
-        "rules": {
-          "no-hardcoded-env-urls": {
-            "level": "error"
-          },
-          "no-unused-params": {
-            "level": "error"
-          },
-          "no-unused-vars": {
-            "level": "error"
-          },
-          "prefer-interpolation": {
-            "level": "error"
-          },
-          "secure-parameter-default": {
-            "level": "error"
-          },
-          "simplify-interpolation": {
-            "level": "error"
-          }
+  "analyzers": {
+    "core": {
+      "enabled": true,
+      "verbose": false,
+      "rules": {
+        "adminusername-should-not-be-literal": {
+          "level": "warning"
+        },
+        "no-hardcoded-env-urls": {
+          "level": "warning"
+        },
+        "no-unnecessary-dependson": {
+          "level": "warning"
+        },
+        "no-unused-params": {
+          "level": "warning"
+        },
+        "no-unused-vars": {
+          "level": "warning"
+        },
+        "outputs-should-not-contain-secrets": {
+          "level": "warning"
+        },
+        "prefer-interpolation": {
+          "level": "warning"
+        },
+        "secure-parameter-default": {
+          "level": "warning"
+        },
+        "simplify-interpolation": {
+          "level": "warning"
+        },
+        "use-stable-vm-image": {
+          "level": "warning"
         }
       }
     }
   }
+}
