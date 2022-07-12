@@ -24,14 +24,14 @@ param application string
 param tags object
 
 var appInsightName = 'appi-${application}-${environmentType}'
-var appServiceName = 'app-${application}-${environmentType}'
+var appServiceName = 'apps-${application}-${environmentType}'
 var appServicePlanName = 'plan-${application}-${environmentType}'
 var serviceBusName = 'sb-${application}-${environmentType}'
 var serviceBusQueueName = 'sbq-${application}Queue'
 var sbQueueEndpointUri = 'sb://${serviceBusName}.servicebus.windows.net'
 var containerSpec = 'DOCKER|${containerRegistry.properties.loginServer}/${containerImageAndTag}'
 var iotHubName = 'iot-${application}-${environmentType}'
-var appConfigName = 'appConfig-${application}-${environmentType}-001'
+var appConfigName = 'appc-${application}-${environmentType}-001'
 var appConfigEndpoint = 'https://${appConfigName}.azconfig.io'
 
 
