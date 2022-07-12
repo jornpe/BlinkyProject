@@ -10,6 +10,8 @@ param serviceBusName string
 
 param environmentType string
 
+param tags object
+
 var sbqEndpointName = 'ep-sbq-${environmentType}-${location}'
 var routeName = 'deviceroute-${environmentType}-${location}'
 var iotHubIdentityName = 'id-iothub-${environmentType}-${location}-001'
@@ -17,6 +19,7 @@ var iotHubIdentityName = 'id-iothub-${environmentType}-${location}-001'
 resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2021-09-30-preview' = {
   name: iotHubIdentityName
   location: location
+  tags: tags
 }
 
 resource messageBus 'Microsoft.ServiceBus/namespaces@2021-11-01' existing = {
@@ -46,6 +49,7 @@ resource iotHub 'Microsoft.Devices/IotHubs@2021-07-02' = {
     name: 'B1'
     capacity: 1
   }
+  tags: tags
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {

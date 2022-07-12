@@ -10,12 +10,13 @@ if (!Uri.TryCreate( builder.Configuration.GetValue<string>("AppConfig:Endpoint")
     throw new InvalidOperationException("App configuration URI is not valid");
 }
 
+builder.Configuration.AddAzureAppConfiguration(options =>  options.Connect(endpoint, token).Select("Blinkey:*"));
 
-builder.Configuration.AddAzureAppConfiguration(options =>
-{
-    options.Connect(endpoint, token)
-           .Select("Blinkey:*");
-});
+var iothubHostName = builder.Configuration.GetValue<string>("Blinkey:IotHubOptions:HostName");
+builder.Services.AddScoped(provider => ServiceClient.Create(iothubHostName, token));
+builder.Services.AddScoped(provider => RegistryManager.Create(iothubHostName, token));
+
+builder.Services.AddApplicationInsightsTelemetry();
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
@@ -24,17 +25,6 @@ builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped<DeviceTwinService>();
 builder.Services.AddScoped<IotDevicesService>();
 
-var IothubHostName = builder.Configuration.GetValue<string>("Blinkey:IotHubOptions:HostName");
-
-builder.Services.AddScoped(provider =>
-{
-    return ServiceClient.Create(IothubHostName, token);
-});
-
-builder.Services.AddScoped(provider =>
-{
-    return RegistryManager.Create(IothubHostName, token);
-});
 
 var app = builder.Build();
 

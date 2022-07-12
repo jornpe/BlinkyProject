@@ -7,6 +7,8 @@ param serviceBusQueueName string
 @description('Location for all resources.')
 param location string
 
+param tags object
+
 resource serviceBus 'Microsoft.ServiceBus/namespaces@2021-11-01' = {
   name: serviceBusNamespaceName
   location: location
@@ -16,6 +18,7 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2021-11-01' = {
   identity: {
     type: 'SystemAssigned'
   }
+  tags: tags
 }
 
 resource serviceBusQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {

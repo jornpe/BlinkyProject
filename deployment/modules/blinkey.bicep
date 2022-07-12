@@ -1,11 +1,15 @@
 @description('Location to use for the resources')
 param location string
+
 @description('Name of the container registry instance')
 param containerRegistryName string
+
 @description('The name:tag of the image to use')
 param containerImageAndTag string
+
 @description('Reference to the instrastructure resource group')
 param sharedInfrastructureRgName string
+
 @description('The environment that is depoyed')
 @allowed([
   'dev'
@@ -13,14 +17,21 @@ param sharedInfrastructureRgName string
 ])  
 param environmentType string
 
-var appServiceName = 'app-blinkey-${environmentType}'
-var appServicePlanName = 'plan-blinkey-${environmentType}'
-var serviceBusName = 'sb-blinkey-${environmentType}'
-var serviceBusQueueName = 'sbq-blinkeyQueue'
+@description('Name of the application to be deployed')
+param application string
+
+@description('Tags to add the all resources that is being deployed')
+param tags object
+
+var appInsightName = 'appi-${application}-${environmentType}'
+var appServiceName = 'app-${application}-${environmentType}'
+var appServicePlanName = 'plan-${application}-${environmentType}'
+var serviceBusName = 'sb-${application}-${environmentType}'
+var serviceBusQueueName = 'sbq-${application}Queue'
 var sbQueueEndpointUri = 'sb://${serviceBusName}.servicebus.windows.net'
 var containerSpec = 'DOCKER|${containerRegistry.properties.loginServer}/${containerImageAndTag}'
-var iotHubName = 'iot-blinkey-${environmentType}'
-var appConfigName = 'appConfig-blinkey-${environmentType}-001'
+var iotHubName = 'iot-${application}-${environmentType}'
+var appConfigName = 'appConfig-${application}-${environmentType}-001'
 var appConfigEndpoint = 'https://${appConfigName}.azconfig.io'
 
 
@@ -29,12 +40,22 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-12-01-pr
   scope: resourceGroup(sharedInfrastructureRgName)
 }
 
+module appInsight 'applicationInsight.bicep' = {
+  name: 'applicationInsight'
+  params: {
+    appInsightName: appInsightName
+    location: location
+    tags: tags
+  }
+}
+
 module serviceBus 'serviceBus.bicep' = {
   name: 'ServiceBusAndQueue-${environmentType}'
   params: {
     serviceBusNamespaceName: serviceBusName
     serviceBusQueueName: serviceBusQueueName
     location: location
+    tags: tags
   }
 }
 
@@ -44,6 +65,7 @@ module IotHub 'iotHub.bicep' = {
     environmentType: environmentType
     iotHubName: iotHubName
     location: location
+    tags: tags
     sbQueueEndpointUri: sbQueueEndpointUri
     sbQueueName: serviceBusQueueName
     serviceBusName: serviceBusName
@@ -60,7 +82,9 @@ module appService 'website.bicep' = {
     appServicePlanName: appServicePlanName
     containerSpecs: containerSpec
     location: location
+    tags: tags
     appConfigEndpoint: appConfigEndpoint
+    appInsightInstrumentationKey: appInsight.outputs.instrumentationKey
   }
   dependsOn: [
     serviceBus
@@ -81,6 +105,7 @@ module appConfigStore 'appConfig.bicep' = {
     configStoreName: appConfigName
     keyValues: keyValues
     location: location
+    tags: tags
     principalIds: [
       appService.outputs.principalId
     ]

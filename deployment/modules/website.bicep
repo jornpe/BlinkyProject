@@ -3,6 +3,8 @@ param location string
 param appServiceName string
 param containerSpecs string
 param appConfigEndpoint string
+param appInsightInstrumentationKey string
+param tags object
 
 resource appservicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   name: appServicePlanName
@@ -14,6 +16,7 @@ resource appservicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   properties: {
     reserved: true
   }
+  tags: tags
 }
 
 resource appService 'Microsoft.Web/sites@2021-03-01' = {
@@ -32,6 +35,7 @@ resource appService 'Microsoft.Web/sites@2021-03-01' = {
   identity: {
     type: 'SystemAssigned'
   }
+  tags: tags
 }
 
 resource appServiceAppConfig 'Microsoft.Web/sites/config@2021-03-01' = {
@@ -39,6 +43,7 @@ resource appServiceAppConfig 'Microsoft.Web/sites/config@2021-03-01' = {
   parent: appService
   properties: {
     AppConfig__Endpoint: appConfigEndpoint
+    APPINSIGHTS_INSTRUMENTATIONKEY: appInsightInstrumentationKey
   }
 }
 
@@ -66,5 +71,6 @@ resource appServiceLogConfig 'Microsoft.Web/sites/config@2021-03-01' = {
     }
   }
 }
+
 
 output principalId string = appService.identity.principalId

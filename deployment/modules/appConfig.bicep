@@ -10,6 +10,8 @@ param keyValues array
 @description('Pricipal IDs to resources that recuire read access')
 param principalIds array
 
+param tags object
+
 resource appconfigStore 'Microsoft.AppConfiguration/configurationStores@2022-05-01' = {
   name: configStoreName
   location: location
@@ -19,6 +21,7 @@ resource appconfigStore 'Microsoft.AppConfiguration/configurationStores@2022-05-
   identity: {
     type: 'SystemAssigned'
   }
+  tags: tags
 }
 
 resource keyValueConfigPairs 'Microsoft.AppConfiguration/configurationStores/keyValues@2022-05-01' = [for keyValue in keyValues: {
