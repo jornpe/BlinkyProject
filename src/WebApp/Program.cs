@@ -3,18 +3,25 @@ using Microsoft.Azure.Devices;
 using WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-var token = new DefaultAzureCredential();
+
+#if DEBUG
+var labelFilter = "Local";
+#else
+var labelFilter = builder.Environment.EnvironmentName;
+#endif
+
+Console.WriteLine("Current environment is: " + labelFilter);
 
 if (!Uri.TryCreate( builder.Configuration.GetValue<string>("AppConfig:Endpoint"), UriKind.Absolute, out var endpoint))
 {
-    throw new InvalidOperationException("App configuration URI is not valid");
+    throw new InvalidOperationException($"App configuration URI is not valid. URI: {endpoint?.AbsoluteUri}");
 }
 
-builder.Configuration.AddAzureAppConfiguration(options =>  options.Connect(endpoint, token).Select("Blinkey:*"));
+builder.Configuration.AddAzureAppConfiguration(options => options.Connect(endpoint, new DefaultAzureCredential()).Select("Blinkey:*", labelFilter));
 
 var iothubHostName = builder.Configuration.GetValue<string>("Blinkey:IotHubOptions:HostName");
-builder.Services.AddScoped(provider => ServiceClient.Create(iothubHostName, token));
-builder.Services.AddScoped(provider => RegistryManager.Create(iothubHostName, token));
+builder.Services.AddScoped(_ => ServiceClient.Create(iothubHostName, new DefaultAzureCredential()));
+builder.Services.AddScoped(_ => RegistryManager.Create(iothubHostName, new DefaultAzureCredential()));
 
 builder.Services.AddApplicationInsightsTelemetry();
 

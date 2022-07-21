@@ -7,17 +7,14 @@ namespace WebApp.Services
 {
     public class DeviceTwinService
     {
-        private static string deviceId = "jornpTestDevice";
         private readonly ServiceClient serviceClient;
-        private readonly ILogger<DeviceTwinService> logger;
 
-        public DeviceTwinService(ServiceClient serviceClient, ILogger<DeviceTwinService> logger)
+        public DeviceTwinService(ServiceClient serviceClient)
         {
             this.serviceClient = serviceClient;
-            this.logger = logger;
         }
 
-        public async Task SendCouldToDeviceMessage(ColorUpdateMessage colorUpdateMessage)
+        public async Task SendCouldToDeviceMessage(ColorUpdateMessage colorUpdateMessage, string deviceId)
         {
             var json = JsonSerializer.Serialize(colorUpdateMessage);
             var msg = new Message(Encoding.ASCII.GetBytes(json));
@@ -25,8 +22,7 @@ namespace WebApp.Services
             msg.ContentEncoding = "UTF-8";
 
             await serviceClient.SendAsync(deviceId, msg);
-            var feedbackReciver = serviceClient.GetFeedbackReceiver();
-
+            
         }
     }
 }

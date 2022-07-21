@@ -1,4 +1,6 @@
-﻿@page "/"
+﻿@inject IConfiguration configuration
+
+@page "/"
 
 <PageTitle>Index</PageTitle>
 
@@ -7,8 +9,25 @@
 <div class="row px-3">
     <div class="col-md-5 p-3">
         <Radzen.Blazor.RadzenCard>
-            <p class="mb-2">Too see the source data for this project, please visit </p>
-            <Radzen.Blazor.RadzenLink Path="https://github.com/jornpe/BlinkyProject" Text="Github" Target="_blank"/>
+            <h3 class="mb-2">Connection configuration </h3>
+            <p1>Environment set to: <b>@environment</b> </p1>
+            <p1>App configuration URL set to: <b>@appConfigUrl</b></p1>
+            <p1>IOT hostname is set to: <b>@iotHubHostname</b></p1>
         </Radzen.Blazor.RadzenCard>
     </div>
 </div>
+
+@code
+{
+    string environment = "";
+    string iotHubHostname = "Default Value";
+    string appConfigUrl = "";
+
+    protected override void OnInitialized()
+    {
+        environment = configuration["ASPNETCORE_ENVIRONMENT"];
+        iotHubHostname = configuration["Blinkey:IotHubOptions:HostName"];
+        appConfigUrl = configuration["AppConfig:Endpoint"];
+        base.OnInitialized();
+    }
+}
