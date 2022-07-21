@@ -10,8 +10,16 @@ var config = new ConfigurationBuilder()
     .Build();
 
 
-string deviceConnectionString = config.GetConnectionString("DevicePrimary");
+var deviceConnectionString = config.GetConnectionString("IotDevice");
 var device = DeviceClient.CreateFromConnectionString(deviceConnectionString);
+
+var deviceName = deviceConnectionString
+                        .Split(';')
+                        .First(s => s.StartsWith("DeviceId"))
+                        .Split('=')
+                        .Last();
+
+Console.WriteLine("Connected using device ID: " + deviceName);
 
 var rec = ReceiveMessagesAsync(device);
 var snd = SendTelemetryDataAsync(device);
@@ -22,11 +30,11 @@ static async Task ReceiveMessagesAsync(DeviceClient? device)
 {
     if (device == null) return;
 
-    Console.WriteLine("Starting to listen to incomming messages");
+    Console.WriteLine("Starting to listen to incoming messages");
 
     while (true)
     {
-        Message receivedMessage = await device.ReceiveAsync();
+        var receivedMessage = await device.ReceiveAsync();
         if (receivedMessage == null) continue;
 
         Console.ForegroundColor = ConsoleColor.Green;

@@ -31,15 +31,9 @@
         </RadzenCard>
 </div>
 
-<p>@errorMsg</p>
-<p>@stackTrace</p>
-
 
 @code {
     string color = "";
-
-    string errorMsg = "";
-    string stackTrace = "";
 
     List<string>? devices;
 
@@ -51,9 +45,7 @@
         }
         catch (Exception e)
         {
-            errorMsg = e.Message;
-            stackTrace = e.StackTrace + e.InnerException?.StackTrace;
-            await JsRuntime.InvokeAsync<string>("console.log", e.StackTrace);
+            logger.LogError(e, "Exception thrown on initializing color picker page");
         }
     }
 
@@ -61,15 +53,22 @@
     {
         var colorMessage = new ColorUpdateMessage { Color = value };
 
-        try
+        if (devices is null)
         {
-            await deviceTwinService.SendCouldToDeviceMessage(colorMessage);
+            logger.LogWarning("There is no devices to send the color update too!");
+            return;
         }
-        catch (Exception e)
+
+        foreach (var device in devices)
         {
-            errorMsg = e.Message;
-            stackTrace = e.StackTrace + e.InnerException?.StackTrace;
-            await JsRuntime.InvokeAsync<string>("console.log", e.StackTrace);
+            try
+            {
+                await deviceTwinService.SendCouldToDeviceMessage(colorMessage, device);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Exception thrown on changing the color of an device");
+            }
         }
     }
 }

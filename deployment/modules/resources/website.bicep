@@ -2,7 +2,29 @@ param appServicePlanName string
 param location string
 param appServiceName string
 param containerSpecs string
-param iotHubHostName string
+param appConfigEndpoint string
+param appInsightInstrumentationKey string
+param tags object
+@allowed([
+  'dev'
+  'prod'
+])  
+param environmentType string
+
+var appsettings = [
+  {
+    name: 'AppConfig__Endpoint'
+    value: appConfigEndpoint
+  }
+  {
+    name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+    value: appInsightInstrumentationKey
+  }
+  {
+    name: 'ASPNETCORE_ENVIRONMENT'
+    value: environmentType == 'prod' ? 'Production' : 'Development'
+  }
+]
 
 resource appservicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   name: appServicePlanName
@@ -14,6 +36,7 @@ resource appservicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   properties: {
     reserved: true
   }
+  tags: tags
 }
 
 resource appService 'Microsoft.Web/sites@2021-03-01' = {
@@ -27,19 +50,13 @@ resource appService 'Microsoft.Web/sites@2021-03-01' = {
       acrUseManagedIdentityCreds: true
       linuxFxVersion: containerSpecs
       minTlsVersion: '1.2'
+      appSettings: appsettings
     }
   }
   identity: {
     type: 'SystemAssigned'
   }
-}
-
-resource appServiceAppConfig 'Microsoft.Web/sites/config@2021-03-01' = {
-  name: 'appsettings'
-  parent: appService
-  properties: {
-    IotHubOptions__HostName: iotHubHostName
-  }
+  tags: tags
 }
 
 resource appServiceLogConfig 'Microsoft.Web/sites/config@2021-03-01' = {
@@ -65,7 +82,7 @@ resource appServiceLogConfig 'Microsoft.Web/sites/config@2021-03-01' = {
       enabled: true
     }
   }
-  
 }
+
 
 output principalId string = appService.identity.principalId

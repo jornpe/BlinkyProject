@@ -4,10 +4,30 @@ using WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-ConfigureIothubConnection(builder);
+#if DEBUG
+var labelFilter = "Local";
+#else
+var labelFilter = builder.Environment.EnvironmentName;
+#endif
+
+Console.WriteLine("Current environment is: " + labelFilter);
+
+if (!Uri.TryCreate( builder.Configuration.GetValue<string>("AppConfig:Endpoint"), UriKind.Absolute, out var endpoint))
+{
+    throw new InvalidOperationException($"App configuration URI is not valid. URI: {endpoint?.AbsoluteUri}");
+}
+
+builder.Configuration.AddAzureAppConfiguration(options => options.Connect(endpoint, new DefaultAzureCredential()).Select("Blinkey:*", labelFilter));
+
+var iothubHostName = builder.Configuration.GetValue<string>("Blinkey:IotHubOptions:HostName");
+builder.Services.AddScoped(_ => ServiceClient.Create(iothubHostName, new DefaultAzureCredential()));
+builder.Services.AddScoped(_ => RegistryManager.Create(iothubHostName, new DefaultAzureCredential()));
+
+builder.Services.AddApplicationInsightsTelemetry();
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddAzureAppConfiguration();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped<DeviceTwinService>();
 builder.Services.AddScoped<IotDevicesService>();
@@ -33,21 +53,3 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
-
-
-
-static void ConfigureIothubConnection(WebApplicationBuilder builder)
-{
-    var IothubHostName = builder.Configuration.GetValue<string>("IotHubOptions:HostName");
-    builder.Services.AddScoped(provider =>
-    {
-        var token = new DefaultAzureCredential();
-        return ServiceClient.Create(IothubHostName, token);
-    });
-
-    builder.Services.AddScoped(provider =>
-    {
-        var token = new DefaultAzureCredential();
-        return RegistryManager.Create(IothubHostName, token);
-    });
-}
