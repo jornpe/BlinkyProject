@@ -7,8 +7,11 @@ param containerRegistryName string
 @description('The name:tag of the image to use')
 param containerImageAndTag string
 
+@description('Name of the app config resource')
+param appConfigName string
+
 @description('Reference to the instrastructure resource group')
-param sharedInfrastructureRgName string
+param infrastructureRgName string
 
 @description('The environment that is depoyed')
 @allowed([
@@ -31,16 +34,20 @@ var serviceBusQueueName = 'sbq-${application}Queue'
 var sbQueueEndpointUri = 'sb://${serviceBusName}.servicebus.windows.net'
 var containerSpec = 'DOCKER|${containerRegistry.properties.loginServer}/${containerImageAndTag}'
 var iotHubName = 'iot-${application}-${environmentType}'
-var appConfigName = 'appc-${application}-${environmentType}-001'
 var appConfigEndpoint = 'https://${appConfigName}.azconfig.io'
 
 
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-12-01-preview' existing = {
   name: containerRegistryName
-  scope: resourceGroup(sharedInfrastructureRgName)
+  scope: resourceGroup(infrastructureRgName)
 }
 
-module appInsight 'applicationInsight.bicep' = {
+resource appConfigStore 'Microsoft.AppConfiguration/configurationStores@2022-05-01' existing = {
+  name: appConfigName
+  scope: resourceGroup(infrastructureRgName)
+}
+
+module appInsight 'resources/applicationInsight.bicep' = {
   name: 'applicationInsight'
   params: {
     appInsightName: appInsightName
@@ -49,7 +56,7 @@ module appInsight 'applicationInsight.bicep' = {
   }
 }
 
-module serviceBus 'serviceBus.bicep' = {
+module serviceBus 'resources/serviceBus.bicep' = {
   name: 'ServiceBusAndQueue-${environmentType}'
   params: {
     serviceBusNamespaceName: serviceBusName
@@ -59,7 +66,7 @@ module serviceBus 'serviceBus.bicep' = {
   }
 }
 
-module IotHub 'iotHub.bicep' = {
+module IotHub 'resources/iotHub.bicep' = {
   name: 'IotHub-${environmentType}'
   params: {
     environmentType: environmentType
@@ -75,7 +82,7 @@ module IotHub 'iotHub.bicep' = {
   ]
 }
 
-module appService 'website.bicep' = {
+module appService 'resources/website.bicep' = {
   name: 'AppService-${environmentType}'
   params: {
     appServiceName: appServiceName
@@ -85,10 +92,12 @@ module appService 'website.bicep' = {
     tags: tags
     appConfigEndpoint: appConfigEndpoint
     appInsightInstrumentationKey: appInsight.outputs.instrumentationKey
+    environmentType: environmentType
   }
   dependsOn: [
     serviceBus
     IotHub
+    appInsight
   ]
 }
 
@@ -99,26 +108,30 @@ var keyValues = [
   }
 ]
 
-module appConfigStore 'appConfig.bicep' = {
-  name: 'AppConfigStore'
+module appConfigConfiguration 'resources/appConfigValues.bicep' = {
+  name: 'appConfigConfiguration'
+  scope: resourceGroup(infrastructureRgName)
   params: {
     configStoreName: appConfigName
     keyValues: keyValues
-    location: location
-    tags: tags
+    environmentType: environmentType
+  }
+}
+
+module appConfigRoleAssignment 'roleAssignments/appConfigRoleAssignment.bicep' = {
+  name: 'appCofigRoleAssignment'
+  scope: resourceGroup(infrastructureRgName)
+  params: {
+    configStoreName: appConfigName
     principalIds: [
       appService.outputs.principalId
     ]
   }
-  dependsOn: [
-    IotHub
-    appService
-  ]
 }
 
-module acrRoleAssignment 'roleAssignments/assignContainerPullRole.bicep' = {
-  name: 'ACRpullRoleAssignmentForAppService'
-  scope: resourceGroup(sharedInfrastructureRgName)
+module acrRoleAssignment 'roleAssignments/contianerRegistryRoleAssignment.bicep' = {
+  name: 'acrRoleAssignment'
+  scope: resourceGroup(infrastructureRgName)
   params: {
     principalId: appService.outputs.principalId
     containerRegistryName: containerRegistryName

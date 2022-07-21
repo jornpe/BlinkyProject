@@ -14,7 +14,7 @@ pool:
 variables:
   dockerImageName: 'blinkey'
   dockerImageNameAndTag: '$(dockerImageName):$(Build.BuildNumber)'
-  containerRegistryName: 'crblinkeyshared001'
+  containerRegistryName: 'crblinkey001'
 
 stages:
 

@@ -10,7 +10,10 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-12-01-pr
   name: registryName
   location: location
   sku: {
-    name: 'Standard'
+    name: 'Basic'
   }
   tags: tags
+  identity:{
+   type: 'SystemAssigned'
+  }
 }
