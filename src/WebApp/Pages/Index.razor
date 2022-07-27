@@ -1,33 +1,119 @@
-﻿@inject IConfiguration configuration
+﻿@inject IConfiguration Configuration
+@inject IotDevicesService iotDeviceService
+@inject DeviceTwinService deviceTwinService
+@inject ILogger<Index> logger
 
 @page "/"
+@using Microsoft.Azure.Devices
+@using Microsoft.Azure.Devices.Shared
+@using WebApp.Infrastructure
+@using WebApp.Messages
+@using WebApp.Services
 
 <PageTitle>Index</PageTitle>
 
-<h1>Welcome to blinkey project</h1>
+<h1>Welcome to Blinkey project</h1>
 
 <div class="row px-3">
     <div class="col-md-5 p-3">
         <Radzen.Blazor.RadzenCard>
             <h3 class="mb-2">Connection configuration </h3>
-            <p1>Environment set to: <b>@environment</b> </p1>
             <p1>App configuration URL set to: <b>@appConfigUrl</b></p1>
             <p1>IOT hostname is set to: <b>@iotHubHostname</b></p1>
+            <p1>Number of devices: <b>@numberOfDevices</b></p1>
         </Radzen.Blazor.RadzenCard>
     </div>
 </div>
 
+<RadzenDataGrid @ref="devicesGrid" Data="iotDevices" TItem="DeviceTwin" AllowSorting="true" AllowPaging="true" PageSize="5">
+    <Columns>
+
+        <RadzenDataGridColumn Width="50px" TItem="DeviceTwin" Title="#" Filterable="false" Sortable="true" TextAlign="TextAlign.Center">
+            <Template Context="data">
+                @(iotDevices?.IndexOf(data) + 1)
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="DeviceTwin" Property="Twin.DeviceId" Title="Device Id"/>
+        
+        <RadzenDataGridColumn TItem="DeviceTwin" Property="Color" Title="Color">
+            <Template Context="deviceTwin">
+
+                <RadzenColorPicker @bind-Value="@deviceTwin.ColorPickerColorBinding" Change="@(color => OnColorChanged(deviceTwin.Twin.DeviceId, color))" ShowButton="true"/>
+                <RadzenLabel Text="@deviceTwin.Color.ToString()" Component="HSV" Style="margin-left: 8px; margin-right: 32px; vertical-align: super;" />
+
+            </Template>
+        </RadzenDataGridColumn>
+
+    </Columns>
+</RadzenDataGrid>
+
 @code
 {
-    string environment = "";
     string iotHubHostname = "Default Value";
     string appConfigUrl = "";
+    int numberOfDevices;
+
+    RadzenDataGrid<DeviceTwin> devicesGrid = new();
+
+    List<DeviceTwin>? iotDevices;
+
 
     protected override void OnInitialized()
     {
-        environment = configuration["ASPNETCORE_ENVIRONMENT"];
-        iotHubHostname = configuration["Blinkey:IotHubOptions:HostName"];
-        appConfigUrl = configuration["AppConfig:Endpoint"];
-        base.OnInitialized();
+        iotHubHostname = Configuration["Blinkey:IotHubOptions:HostName"];
+        appConfigUrl = Configuration["AppConfig:Endpoint"];
+
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            iotDevices = new List<DeviceTwin>();
+
+            try
+            {
+                foreach (var twin in await iotDeviceService.GetTwinsAsync())
+                {
+                    iotDevices.Add(new DeviceTwin(twin));
+                }
+
+                numberOfDevices = iotDevices.Count;
+
+                StateHasChanged();
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Exception thrown on initializing color picker page");
+            }
+        }
+    }
+
+    private async Task OnColorChanged(string deviceId, string newColor)
+    {
+        var rgb = newColor.Split('(', ')')[1].Split(',');
+
+        var device = iotDevices?.First(d => d.Twin.DeviceId == deviceId);
+
+        if (device is null)
+        {
+            logger.LogWarning("There is no device with id: {deviceId} to send the color update too!", deviceId);
+            return;
+        }
+
+        device.Color.Red = int.Parse(rgb[0]);
+        device.Color.Green = int.Parse(rgb[1]);
+        device.Color.Blue = int.Parse(rgb[2]);
+
+        try
+        {
+            await deviceTwinService.SendCouldToDeviceMessage(device.Color, device.Twin.DeviceId);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Exception thrown on changing the color of an device");
+        }
     }
 }

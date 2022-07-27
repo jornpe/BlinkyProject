@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Devices;
+using Microsoft.Azure.Devices.Shared;
 
 namespace WebApp.Services
 {
@@ -15,11 +16,11 @@ namespace WebApp.Services
             this.configuration = configuration;
         }
 
-        public async Task<List<string>> GetDevicesIdsAsync()
+        public async Task<List<Twin>> GetTwinsAsync()
         {
             logger.LogInformation("Connected to: {0} ", configuration["AppConfig:Endpoint"]);
 
-            var ids = new List<string>();
+            var twins = new List<Twin>();
             var query = registryManager.CreateQuery("SELECT * from devices");
 
             while (query.HasMoreResults)
@@ -27,11 +28,11 @@ namespace WebApp.Services
                 foreach (var twin in await query.GetNextAsTwinAsync())
                 {
                     logger.LogInformation("Found device twin with ID: {twin.DeviceId}", twin.DeviceId);
-                    ids.Add(twin.DeviceId);
+                    twins.Add(twin);
                 }
             }
 
-            return ids;
+            return twins;
         }
     }
 }

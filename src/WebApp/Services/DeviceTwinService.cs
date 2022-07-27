@@ -14,7 +14,7 @@ namespace WebApp.Services
             this.serviceClient = serviceClient;
         }
 
-        public async Task SendCouldToDeviceMessage(ColorUpdateMessage colorUpdateMessage, string deviceId)
+        public async Task SendCouldToDeviceMessage(ColorDto colorUpdateMessage, string deviceId)
         {
             var json = JsonSerializer.Serialize(colorUpdateMessage);
             var msg = new Message(Encoding.ASCII.GetBytes(json));
