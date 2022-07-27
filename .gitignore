@@ -10,6 +10,9 @@
 *.userosscache
 *.sln.docstates
 
+# Dont want this file in source control as it will contain the device id, key and wifi credentials
+iot_configs.h
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
