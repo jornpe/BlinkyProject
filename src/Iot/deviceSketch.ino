@@ -1,3 +1,18 @@
+// Best Pins to Use – ESP8266 -- https://randomnerdtutorials.com/esp8266-pinout-reference-gpios/
+// Label  GPIO    Input         Output                  Notes
+// D0	    GPIO16  no interrupt  no PWM or I2C support   HIGH at boot used to wake up from deep sleep
+// D1	    GPIO5	  OK	          OK	                    often used as SCL (I2C)
+// D2	    GPIO4	  OK	          OK	                    often used as SDA (I2C)
+// D3	    GPIO0	  pulled up	    OK	                    connected to FLASH button, boot fails if pulled LOW
+// D4	    GPIO2	  pulled up	    OK	                    HIGH at boot connected to on-board LED, boot fails if pulled LOW
+// D5	    GPIO14	OK	          OK	                    SPI (SCLK)
+// D6	    GPIO12	OK	          OK	                    SPI (MISO)
+// D7	    GPIO13	OK	          OK	                    SPI (MOSI)
+// D8	    GPIO15	pulled to GND	OK	                    SPI (CS) Boot fails if pulled HIGH
+// RX	    GPIO3	  OK	          RX pin	                HIGH at boot
+// TX	    GPIO1	  TX pin	      OK	                    HIGH at boot debug output at boot, boot fails if pulled LOW
+// A0	    ADC0	  Analog Input	X	
+
 #include <ArduinoJson.h>
 
 // C99 libraries
@@ -23,15 +38,26 @@
 // Additional sample headers 
 #include "iot_configs.h"
 
+// Temp sensor
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
+
 // Fastled
 #include <FastLED.h>
 
-#define LED_PIN     2
+#define LED_PIN     2 // D2 - GPIO4 -- Fast led uses the D number, so connect this to D2. 
 #define NUM_LEDS    14
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER GRB
 
 CRGB leds[NUM_LEDS];
+
+// Setup temp sensor DHT11
+#define DHT_TYPE     DHT11
+#define DHT_PIN      5 // D1 - GPIO5 -- DHT library uses GPIO pin number, so coonnect this to D1, which equals to GPIO 5
+
+DHT_Unified dht(DHT_PIN, DHT_TYPE);
 
 
 // When developing for your own Arduino-based platform,
@@ -63,8 +89,6 @@ static unsigned char encrypted_signature[32];
 static char base64_decoded_device_key[32];
 static unsigned long next_telemetry_send_time_ms = 0;
 static char telemetry_topic[128];
-static uint8_t telemetry_payload[100];
-static uint32_t telemetry_send_count = 0;
 
 
 // Auxiliary functions
@@ -115,29 +139,6 @@ static void printCurrentTime()
   Serial.print(getCurrentLocalTimeString());
 }
 
-void receivedCallback(char* topic, byte* payload, unsigned int length)
-{
-  Serial.print("Received [");
-  Serial.print(topic);
-  Serial.print("]: ");
-  for (int i = 0; i < length; i++)
-  {
-    Serial.print((char)payload[i]);
-  }
-
-  if (strstr(topic, "devicebound") != NULL)
-  {
-    DynamicJsonDocument doc(1024);
-    deserializeJson(doc, payload);
-
-    uint8_t red = doc["Red"];
-    uint8_t green = doc["Green"];
-    uint8_t blue = doc["Blue"];
-
-    setLedStripColor(red, green, blue);
-  }
-
-}
 
 static void initializeClients()
 {
@@ -299,20 +300,31 @@ static void establishConnection()
   }
 }
 
-static char* getTelemetryPayload()
+void sendTelemetryPayload()
 {
-  az_span temp_span = az_span_create(telemetry_payload, sizeof(telemetry_payload));
-  temp_span = az_span_copy(temp_span, AZ_SPAN_FROM_STR("{ \"msgCount\": "));
-  (void)az_span_u32toa(temp_span, telemetry_send_count++, &temp_span);  
-  temp_span = az_span_copy(temp_span, AZ_SPAN_FROM_STR(" }"));
-  temp_span = az_span_copy_u8(temp_span, '\0');
+  char payload[256];
+  time_t now = time(NULL);
+  DynamicJsonDocument doc(256);
+  sensors_event_t tEvent;
+  sensors_event_t hEvent;
 
-  return (char*)telemetry_payload;
-}
+  dht.temperature().getEvent(&tEvent);
+  dht.humidity().getEvent(&hEvent);
 
-static void sendTelemetry()
-{
-  Serial.print(millis());
+  // Return if the temperature or humidity reading returned "nan"
+  if (isnan(tEvent.temperature) || isnan(hEvent.relative_humidity)) {
+    Serial.println(F("Error reading temperature or humidity!"));
+    return;
+  }
+
+  doc["device_id"] = device_id;
+  doc["time"] = now;
+  doc["temp"] = tEvent.temperature;
+  doc["humidity"] = hEvent.relative_humidity;
+  serializeJson(doc, payload);
+
+  Serial.println(payload);
+
   Serial.print(" ESP8266 Sending telemetry . . . ");
   if (az_result_failed(az_iot_hub_client_telemetry_get_publish_topic(
           &client, NULL, telemetry_topic, sizeof(telemetry_topic), NULL)))
@@ -321,9 +333,10 @@ static void sendTelemetry()
     return;
   }
 
-  mqtt_client.publish(telemetry_topic, getTelemetryPayload(), false);
+  mqtt_client.publish(telemetry_topic, payload, false);
   Serial.println("OK");
   delay(100);
+    
 }
 
 void setLedStripColor(uint8_t red, uint8_t green, uint8_t blue)
@@ -335,6 +348,30 @@ void setLedStripColor(uint8_t red, uint8_t green, uint8_t blue)
   FastLED.show();
 }
 
+
+void receivedCallback(char* topic, byte* payload, unsigned int length)
+{
+  Serial.print("Received [");
+  Serial.print(topic);
+  Serial.print("]: ");
+  for (int i = 0; i < length; i++)
+  {
+    Serial.print((char)payload[i]);
+  }
+
+  if (strstr(topic, "devicebound") != NULL)
+  {
+    DynamicJsonDocument doc(1024);
+    deserializeJson(doc, payload);
+
+    uint8_t red = doc["Red"];
+    uint8_t green = doc["Green"];
+    uint8_t blue = doc["Blue"];
+
+    setLedStripColor(red, green, blue);
+  }
+
+}
 
 // Arduino setup and loop main functions.
 
@@ -348,23 +385,29 @@ void setup()
 
   // Set it ro red as default color
   setLedStripColor(255,0,0);
+
+  // Initialize temp sensor
+  dht.begin();
 }
 
 void loop()
 {
-  // if (millis() > next_telemetry_send_time_ms)
-  // {
-  //   // Check if connected, reconnect if needed.
-  //   if(!mqtt_client.connected())
-  //   {
-  //     establishConnection();
-  //   }
 
-  //   sendTelemetry();
-  //   next_telemetry_send_time_ms = millis() + TELEMETRY_FREQUENCY_MILLISECS;
-  // }
+  if (millis() > next_telemetry_send_time_ms)
+  {
+    // Check if connected, reconnect if needed.
+    if(!mqtt_client.connected())
+    {
+      establishConnection();
+    }
+
+    sendTelemetryPayload();
+    next_telemetry_send_time_ms = millis() + TELEMETRY_FREQUENCY_MILLISECS;
+  }
 
   // MQTT loop must be called to process Device-to-Cloud and Cloud-to-Device.
   mqtt_client.loop();
-  delay(500);
+  delay(100);
 }
+
+
