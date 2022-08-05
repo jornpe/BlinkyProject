@@ -50,7 +50,6 @@ static async Task SendTelemetryDataAsync(DeviceClient? device, string deviceName
 {
     if(device == null) return;
 
-
     Console.WriteLine("Starting sending telemetry messages");
 
     var rand = new Random();
@@ -60,7 +59,7 @@ static async Task SendTelemetryDataAsync(DeviceClient? device, string deviceName
         var data = new
         {
             device_id = deviceName,
-            time = (int)(DateTime.Now - new DateTime(1970, 1, 1)).TotalSeconds,
+            time = (int)(DateTime.Now.ToUniversalTime() - new DateTime(1970, 1, 1)).TotalSeconds,
             temp = rand.Next(-20, 20),
             humidity = rand.Next(0, 100)
         };
