@@ -7,6 +7,8 @@ namespace WebApp.Infrastructure
     {
         public ColorDto Color { get; set; }
 
+        public TempSensorDto? SensorData { get; set; }
+
         public string ColorPickerColorBinding { get; set; }
 
         public Twin Twin { get; set; }
@@ -14,7 +16,7 @@ namespace WebApp.Infrastructure
         public DeviceTwin(Twin twin)
         {
             Twin = twin;
-
+            SensorData = new TempSensorDto();
             Color = new ColorDto
             {
                 Red = 255,

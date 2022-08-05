@@ -1,14 +1,15 @@
 ﻿@inject IConfiguration Configuration
-@inject IotDevicesService iotDeviceService
-@inject DeviceTwinService deviceTwinService
-@inject ILogger<Index> logger
+@inject IotDevicesService IotDeviceService
+@inject DeviceTwinService DeviceTwinService
+@inject ILogger<Index> Logger
+@inject ServiceBusClient ServiceBusClient
+
 
 @page "/"
-@using Microsoft.Azure.Devices
-@using Microsoft.Azure.Devices.Shared
+@using Azure.Messaging.ServiceBus
 @using WebApp.Infrastructure
-@using WebApp.Messages
 @using WebApp.Services
+@using System.Text.Json
 
 <PageTitle>Index</PageTitle>
 
@@ -20,6 +21,7 @@
             <h3 class="mb-2">Connection configuration </h3>
             <p1>App configuration URL set to: <b>@appConfigUrl</b></p1>
             <p1>IOT hostname is set to: <b>@iotHubHostname</b></p1>
+            <p1>Service bus hostname is set to: <b>@serviceBusHostname</b></p1>
             <p1>Number of devices: <b>@numberOfDevices</b></p1>
         </Radzen.Blazor.RadzenCard>
     </div>
@@ -44,6 +46,25 @@
 
             </Template>
         </RadzenDataGridColumn>
+        
+        
+        <RadzenDataGridColumn TItem="DeviceTwin" Property="SensorData.Temperature" Title="Temperature">
+            <Template Context="device">
+                @if (device.SensorData != null)
+                {
+                    @($"{Math.Round(device.SensorData.Temperature, 2)}°C")
+                }
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="DeviceTwin" Property="SensorData.Humidity" Title="Humidity">
+            <Template Context="device">
+                @if (device.SensorData != null)
+                {
+                    @($"{Math.Round(device.SensorData.Humidity, 2)}%")
+                }
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="DeviceTwin" Property="SensorData.Time" Title="Time on sensor reading"/>
 
     </Columns>
 </RadzenDataGrid>
@@ -51,6 +72,8 @@
 @code
 {
     string iotHubHostname = "Default Value";
+    string serviceBusHostname = "Default Value";
+    string serviceBusQueueName = "";
     string appConfigUrl = "";
     int numberOfDevices;
 
@@ -63,6 +86,8 @@
     {
         iotHubHostname = Configuration["Blinkey:IotHubOptions:HostName"];
         appConfigUrl = Configuration["AppConfig:Endpoint"];
+        serviceBusHostname = Configuration["Blinkey:ServiceBus:HostName"];
+        serviceBusQueueName = Configuration["Blinkey:ServiceBus:QueueName"];
 
     }
 
@@ -75,7 +100,7 @@
 
             try
             {
-                foreach (var twin in await iotDeviceService.GetTwinsAsync())
+                foreach (var twin in await IotDeviceService.GetTwinsAsync())
                 {
                     iotDevices.Add(new DeviceTwin(twin));
                 }
@@ -86,9 +111,46 @@
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Exception thrown on initializing color picker page");
+                Logger.LogError(e, "Exception thrown on initializing color picker page");
+            }
+
+            
+            var processor = ServiceBusClient.CreateProcessor(serviceBusQueueName);
+            processor.ProcessMessageAsync += OnMessageReceivedAsync;
+            processor.ProcessErrorAsync += OnErrorReceivedAsync;
+            await processor.StartProcessingAsync();
+
+        }
+    }
+
+    private async Task OnErrorReceivedAsync(ProcessErrorEventArgs arg)
+    {
+        await InvokeAsync(() => Logger.LogError(arg.Exception, "Exception thrown on receiving sensor data"));
+    }
+
+    private async Task OnMessageReceivedAsync(ProcessMessageEventArgs arg)
+    {
+        TempSensorDto? sensorData;
+        try
+        {
+            sensorData = JsonSerializer.Deserialize<TempSensorDto>(arg.Message.Body.ToString());
+
+            if (iotDevices != null)
+            {
+                iotDevices.First(d => d.Twin.DeviceId == sensorData?.DeviceId).SensorData = sensorData;
+                await InvokeAsync(StateHasChanged);
             }
         }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Exception thrown on deserializing sensor data");
+        }
+        finally
+        {
+            await arg.CompleteMessageAsync(arg.Message);
+        }
+        
+
     }
 
     private async Task OnColorChanged(string deviceId, string newColor)
@@ -99,7 +161,7 @@
 
         if (device is null)
         {
-            logger.LogWarning("There is no device with id: {deviceId} to send the color update too!", deviceId);
+            Logger.LogWarning("There is no device with id: {deviceId} to send the color update too!", deviceId);
             return;
         }
 
@@ -109,11 +171,11 @@
 
         try
         {
-            await deviceTwinService.SendCouldToDeviceMessage(device.Color, device.Twin.DeviceId);
+            await DeviceTwinService.SendCouldToDeviceMessage(device.Color, device.Twin.DeviceId);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Exception thrown on changing the color of an device");
+            Logger.LogError(e, "Exception thrown on changing the color of an device");
         }
     }
 }

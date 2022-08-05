@@ -1,5 +1,7 @@
 using Azure.Identity;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Devices;
+using Microsoft.Extensions.Azure;
 using WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,18 +19,21 @@ if (!Uri.TryCreate( builder.Configuration.GetValue<string>("AppConfig:Endpoint")
     throw new InvalidOperationException($"App configuration URI is not valid. URI: {endpoint?.AbsoluteUri}");
 }
 
-builder.Configuration.AddAzureAppConfiguration(options => options.Connect(endpoint, new DefaultAzureCredential()).Select("Blinkey:*", labelFilter));
+builder.Configuration.AddAzureAppConfiguration(options => options.Connect(endpoint, new DefaultAzureCredential()).Select("Blinkey:*", builder.Environment.EnvironmentName));
 
-var iothubHostName = builder.Configuration.GetValue<string>("Blinkey:IotHubOptions:HostName");
-builder.Services.AddScoped(_ => ServiceClient.Create(iothubHostName, new DefaultAzureCredential()));
-builder.Services.AddScoped(_ => RegistryManager.Create(iothubHostName, new DefaultAzureCredential()));
+var iotHubHostName = builder.Configuration.GetValue<string>("Blinkey:IotHubOptions:HostName");
+var serviceBusHostName = builder.Configuration.GetValue<string>("Blinkey:ServiceBus:HostName").Replace("sb://", "");
+
+builder.Services.AddScoped(_ => ServiceClient.Create(iotHubHostName, new DefaultAzureCredential()));
+builder.Services.AddScoped(_ => RegistryManager.Create(iotHubHostName, new DefaultAzureCredential()));
+
+builder.Services.AddScoped(_ => new ServiceBusClient(serviceBusHostName, new DefaultAzureCredential()));
 
 builder.Services.AddApplicationInsightsTelemetry();
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddAzureAppConfiguration();
-builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped<DeviceTwinService>();
 builder.Services.AddScoped<IotDevicesService>();
 

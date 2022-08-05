@@ -22,7 +22,7 @@ var deviceName = deviceConnectionString
 Console.WriteLine("Connected using device ID: " + deviceName);
 
 var rec = ReceiveMessagesAsync(device);
-var snd = SendTelemetryDataAsync(device);
+var snd = SendTelemetryDataAsync(device, deviceName);
 
 await Task.WhenAll(rec, snd);
 
@@ -46,36 +46,38 @@ static async Task ReceiveMessagesAsync(DeviceClient? device)
 }
 
 
-static async Task SendTelemetryDataAsync(DeviceClient? device)
+static async Task SendTelemetryDataAsync(DeviceClient? device, string deviceName)
 {
     if(device == null) return;
 
 
     Console.WriteLine("Starting sending telemetry messages");
 
+    var rand = new Random();
+
     while (true)
     {
-        var rand = new Random();
-        var json = CreateMessage(rand);
+        var data = new
+        {
+            device_id = deviceName,
+            time = (int)(DateTime.Now - new DateTime(1970, 1, 1)).TotalSeconds,
+            temp = rand.Next(-20, 20),
+            humidity = rand.Next(0, 100)
+        };
+        var json = JsonSerializer.Serialize(data);
         var msg = new Message(Encoding.ASCII.GetBytes(json));
         msg.ContentType = "application/json";
         msg.ContentEncoding = "UTF-8";
+
         await device.SendEventAsync(msg);
+
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"Sending telemetry data at {DateTime.Now} with message : {json}");
         Console.ResetColor();
-        await Task.Delay(2000);
+
+        await Task.Delay(30000);
     }
 
 }
 
-static string CreateMessage(Random rand)
-{
-    var data = new
-    {
-        temp = rand.Next(-20, 20),
-        humidity = rand.Next(0, 100)
-    };
-    return JsonSerializer.Serialize(data);
-}
 
