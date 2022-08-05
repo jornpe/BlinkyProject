@@ -106,6 +106,14 @@ var keyValues = [
     Key: 'Blinkey:IotHubOptions:HostName'
     Value: IotHub.outputs.iotHubHostName
   }
+  {
+    Key: 'Blinkey:ServiceBus:HostName'
+    Value: sbQueueEndpointUri
+  }
+  {
+    Key: 'Blinkey:ServiceBus:QueueName'
+    Value: serviceBusQueueName
+  }
 ]
 
 module appConfigConfiguration 'resources/appConfigValues.bicep' = {
@@ -153,3 +161,14 @@ module iotHubRoleAssignment 'roleAssignments/iotHubRoleAssignment.bicep' = {
   ]
 }
 
+module serviceBusRoleAssignment 'roleAssignments/serviceBusRoleAssignment.bicep' = {
+  name: 'serviceBusRoleAssignment'
+  params: {
+    principalId: appService.outputs.principalId
+    serviceBusName: serviceBusName
+  }
+  dependsOn: [
+    serviceBus
+    appService
+  ]
+}

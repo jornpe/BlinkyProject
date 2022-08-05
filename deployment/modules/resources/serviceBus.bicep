@@ -40,5 +40,3 @@ resource serviceBusQueue 'Microsoft.ServiceBus/namespaces/queues@2021-11-01' = {
   }
 }
 
-output principalId string = serviceBus.identity.principalId
-
