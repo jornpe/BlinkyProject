@@ -15,7 +15,7 @@ namespace WebApp.Infrastructure
 
         [JsonPropertyName("time")] 
         [JsonConverter(typeof(EpochToDateTimeConverter))] 
-        public DateTime Time { get; set; }
+        public DateTime UtcTime { get; set; }
 
         [JsonPropertyName("temp")]
         public double Temperature { get; set; }
@@ -29,9 +29,8 @@ namespace WebApp.Infrastructure
     {
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var test = reader.GetInt64();
             var ticks = DateTime.UnixEpoch.AddSeconds(reader.GetInt64()).Ticks;
-            return new DateTime(ticks, DateTimeKind.Utc).ToLocalTime();
+            return new DateTime(ticks, DateTimeKind.Utc);
         }
 
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)

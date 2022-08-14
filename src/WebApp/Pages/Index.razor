@@ -3,6 +3,7 @@
 @inject DeviceTwinService DeviceTwinService
 @inject ILogger<Index> Logger
 @inject ServiceBusClient ServiceBusClient
+@inject IJSRuntime JsRuntime
 
 
 @page "/"
@@ -64,7 +65,14 @@
                 }
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="DeviceTwin" Property="SensorData.Time" Title="Time on sensor reading"/>
+        <RadzenDataGridColumn TItem="DeviceTwin" Property="SensorData.Time" Title="Time on sensor reading">
+            <Template Context="device">
+                @if (device.SensorData is not null && userTime is not null)
+                {
+                    @($"{device.SensorData.UtcTime.Add(userTime.Value)}%")
+                }
+            </Template>
+        </RadzenDataGridColumn>
 
     </Columns>
 </RadzenDataGrid>
@@ -76,19 +84,26 @@
     string serviceBusQueueName = "";
     string appConfigUrl = "";
     int numberOfDevices;
+    private TimeSpan? userTime;
 
     RadzenDataGrid<DeviceTwin> devicesGrid = new();
 
     List<DeviceTwin>? iotDevices;
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         iotHubHostname = Configuration["Blinkey:IotHubOptions:HostName"];
         appConfigUrl = Configuration["AppConfig:Endpoint"];
         serviceBusHostname = Configuration["Blinkey:ServiceBus:HostName"];
         serviceBusQueueName = Configuration["Blinkey:ServiceBus:QueueName"];
-
+        
+        if (userTime == null)
+        {
+            int timeDiffer = await JsRuntime.InvokeAsync<int>("GetTimezoneValue");
+            userTime = TimeSpan.FromMinutes(-timeDiffer);
+        }
+        
     }
 
 
