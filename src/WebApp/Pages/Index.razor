@@ -51,7 +51,7 @@
         
         <RadzenDataGridColumn TItem="DeviceTwin" Property="SensorData.Temperature" Title="Temperature">
             <Template Context="device">
-                @if (device.SensorData != null)
+                @if (device.SensorData is not null)
                 {
                     @($"{Math.Round(device.SensorData.Temperature, 2)}°C")
                 }
@@ -59,7 +59,7 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="DeviceTwin" Property="SensorData.Humidity" Title="Humidity">
             <Template Context="device">
-                @if (device.SensorData != null)
+                @if (device.SensorData is not null)
                 {
                     @($"{Math.Round(device.SensorData.Humidity, 2)}%")
                 }
@@ -69,7 +69,7 @@
             <Template Context="device">
                 @if (device.SensorData is not null && userTime is not null)
                 {
-                    @($"{device.SensorData.UtcTime.Add(userTime.Value)}%")
+                    @($"{device.SensorData.UtcTime.Add(userTime.Value)}")
                 }
             </Template>
         </RadzenDataGridColumn>
@@ -91,19 +91,12 @@
     List<DeviceTwin>? iotDevices;
 
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         iotHubHostname = Configuration["Blinkey:IotHubOptions:HostName"];
         appConfigUrl = Configuration["AppConfig:Endpoint"];
         serviceBusHostname = Configuration["Blinkey:ServiceBus:HostName"];
         serviceBusQueueName = Configuration["Blinkey:ServiceBus:QueueName"];
-        
-        if (userTime == null)
-        {
-            int timeDiffer = await JsRuntime.InvokeAsync<int>("GetTimezoneValue");
-            userTime = TimeSpan.FromMinutes(-timeDiffer);
-        }
-        
     }
 
 
@@ -111,6 +104,13 @@
     {
         if (firstRender)
         {
+            
+            if (userTime == null)
+            {
+                int timeDiffer = await JsRuntime.InvokeAsync<int>("GetTimezoneValue");
+                userTime = TimeSpan.FromMinutes(-timeDiffer);
+            }
+
             iotDevices = new List<DeviceTwin>();
 
             try

@@ -1,6 +1,7 @@
 ﻿
 using System.Buffers;
 using System.Buffers.Text;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
@@ -11,17 +12,17 @@ namespace WebApp.Infrastructure
     public class TempSensorDto
     {
         [JsonPropertyName("device_id")] 
-        public string? DeviceId { get; set; }
+        public string? DeviceId { get; set; } 
 
         [JsonPropertyName("time")] 
         [JsonConverter(typeof(EpochToDateTimeConverter))] 
         public DateTime UtcTime { get; set; }
 
-        [JsonPropertyName("temp")]
-        public double Temperature { get; set; }
+        [JsonPropertyName("temp")] 
+        public double Temperature { get; set; } 
 
-        [JsonPropertyName("humidity")]
-        public double Humidity { get; set; }
+        [JsonPropertyName("humidity")] 
+        public double Humidity { get; set; } 
 
     }
 

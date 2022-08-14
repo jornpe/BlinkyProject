@@ -16,7 +16,6 @@ namespace WebApp.Infrastructure
         public DeviceTwin(Twin twin)
         {
             Twin = twin;
-            SensorData = new TempSensorDto();
             Color = new ColorDto
             {
                 Red = 255,
